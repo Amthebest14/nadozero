@@ -112,7 +112,7 @@ export default function App() {
       <div className="bg-grain" />
       <div className="bg-vignette" />
 
-      <div className="relative flex">
+      <div className="relative flex flex-col lg:flex-row">
         <Sidebar tab={tab} onChange={setTab} isFetching={isFetching} isPending={isPending} />
 
         <main className="min-w-0 flex-1 px-8 pb-20 pt-8 lg:px-10">
