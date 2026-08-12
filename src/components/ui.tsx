@@ -77,6 +77,7 @@ export function StatTile({
   accent,
   icon,
   tip,
+  gauge,
 }: {
   label: string
   value: ReactNode
@@ -85,10 +86,12 @@ export function StatTile({
   icon?: ReactNode
   /** Plain-English explainer for a jargon-y label — shown as a native tooltip on hover. */
   tip?: string
+  /** 0-100 — renders a radial ring instead of the icon. */
+  gauge?: number
 }) {
   return (
     <div
-      className={`group relative overflow-hidden rounded-2xl border px-5 py-4 transition-transform duration-200 hover:-translate-y-0.5 ${
+      className={`group relative overflow-hidden rounded-2xl border px-5 py-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_16px_32px_-20px_rgba(0,0,0,0.6)] transition-transform duration-200 hover:-translate-y-0.5 ${
         accent
           ? 'border-mint-500/30 bg-gradient-to-br from-mint-500/[0.1] via-ink-900 to-ink-900 card-glow'
           : 'border-ink-700/60 bg-ink-900/60 glass'
@@ -104,7 +107,11 @@ export function StatTile({
         >
           {label}
         </div>
-        {icon && <div className={accent ? 'text-mint-400' : 'text-slate-600'}>{icon}</div>}
+        {gauge !== undefined ? (
+          <RadialGauge value={gauge} size={30} strokeWidth={3} />
+        ) : (
+          icon && <div className={accent ? 'text-mint-400' : 'text-slate-600'}>{icon}</div>
+        )}
       </div>
       <div className={`tnum font-display mt-2 text-3xl font-semibold leading-none ${accent ? 'text-mint-300' : 'text-slate-50'}`}>
         {value}
@@ -126,7 +133,7 @@ export function Panel({
   children: ReactNode
 }) {
   return (
-    <section className="overflow-hidden rounded-2xl border border-ink-700/60 bg-ink-900/50 glass">
+    <section className="overflow-hidden rounded-2xl border border-ink-700/60 bg-ink-900/50 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03),0_20px_40px_-28px_rgba(0,0,0,0.7)] glass">
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-ink-700/50 px-6 py-5">
         <div>
           <h2 className="font-display text-lg font-semibold tracking-tight text-slate-50">{title}</h2>
@@ -136,6 +143,31 @@ export function Panel({
       </header>
       {children}
     </section>
+  )
+}
+
+/** Compact radial percentage ring — mint on ink, same palette as everything else, no new colors. */
+export function RadialGauge({ value, size = 44, strokeWidth = 4 }: { value: number; size?: number; strokeWidth?: number }) {
+  const clamped = Math.min(100, Math.max(0, value))
+  const r = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * r
+  const offset = circumference * (1 - clamped / 100)
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-ink-700)" strokeWidth={strokeWidth} />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="var(--color-mint-400)"
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        className="transition-[stroke-dashoffset] duration-700 ease-out"
+      />
+    </svg>
   )
 }
 

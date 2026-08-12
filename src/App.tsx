@@ -154,7 +154,7 @@ export default function App() {
                 sub="unique wallets in the window"
               />
               <StatTile
-                icon={<Icon.Route />}
+                gauge={routedShare ?? 0}
                 label="Routed by builders"
                 tip="A 'builder' is an app (like NadoZero) that gets a small fee for routing a trade to Nado. This is the share of live volume that's crediting a builder — most trades still aren't."
                 value={routedShare !== undefined ? `${routedShare.toFixed(1)}%` : '—'}
@@ -162,7 +162,7 @@ export default function App() {
               />
               <StatTile
                 accent
-                icon={<Icon.Spark />}
+                gauge={routedShare !== undefined ? 100 - routedShare : 0}
                 label="Unrouted opportunity"
                 tip="The flip side of the builder share — volume trading directly with no app in between."
                 value={routedShare !== undefined ? `${(100 - routedShare).toFixed(1)}%` : '—'}
