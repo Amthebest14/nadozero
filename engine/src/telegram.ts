@@ -33,3 +33,33 @@ export async function sendTelegramAlert(chatId: string, message: string): Promis
     console.error(`[telegram] send error to ${chatId}:`, e instanceof Error ? e.message : e)
   }
 }
+
+/**
+ * Registers our webhook so Telegram pushes updates to us instead of us polling.
+ * `secretToken` is echoed back by Telegram on every webhook call (as the
+ * X-Telegram-Bot-Api-Secret-Token header) so we can reject spoofed POSTs from
+ * anyone who isn't actually Telegram — otherwise /telegram-webhook would be an
+ * unauthenticated endpoint that lets a caller bind any copy id to any chat id.
+ */
+export async function registerTelegramWebhook(publicUrl: string, secretToken: string): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  if (!token) {
+    console.log('[telegram] not configured (no TELEGRAM_BOT_TOKEN) — skipping webhook registration')
+    return
+  }
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: `${publicUrl}/telegram-webhook`, secret_token: secretToken }),
+    })
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      console.error(`[telegram] setWebhook failed (${res.status}): ${body}`)
+    } else {
+      console.log('[telegram] webhook registered')
+    }
+  } catch (e) {
+    console.error('[telegram] setWebhook error:', e instanceof Error ? e.message : e)
+  }
+}

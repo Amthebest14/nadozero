@@ -11,6 +11,7 @@
  */
 import express from 'express'
 import cors from 'cors'
+import { randomBytes } from 'node:crypto'
 import {
   DEFAULT_MAX_SLIPPAGE_PCT,
   getCopy,
@@ -28,11 +29,14 @@ import { defaultSubaccountOf, SUBSCRIPTIONS_WS, type FillEvent } from './nado-ty
 import { INSUFFICIENT_HEALTH_CODES, mirrorFill, type MirrorCtx } from './mirror-core.ts'
 import { computeRatio } from './sizing.ts'
 import { fetchAccountEquity, fetchMarkets, type MarketInfo } from './market-data.ts'
-import { sendTelegramAlert } from './telegram.ts'
+import { registerTelegramWebhook, sendTelegramAlert } from './telegram.ts'
 
 const PORT = Number(process.env.PORT ?? 8080)
 const DB_PATH = process.env.DB_PATH ?? './nadozero.db'
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN ?? '*'
+const PUBLIC_URL = process.env.PUBLIC_URL ?? 'https://nadozero-mirror.fly.dev'
+/** Regenerated on every boot — Telegram echoes it back on each webhook call so we can reject spoofed POSTs. */
+const TELEGRAM_WEBHOOK_SECRET = randomBytes(24).toString('hex')
 
 const isAddress = (v: unknown): v is string => typeof v === 'string' && /^0x[0-9a-fA-F]{40}$/.test(v)
 const isPrivateKey = (v: unknown): v is `0x${string}` => typeof v === 'string' && /^0x[0-9a-fA-F]{64}$/.test(v)
@@ -117,6 +121,8 @@ async function main() {
 
   console.log('Resuming existing active copies...')
   for (const leaderSubaccount of listActiveLeaderSubaccounts(db)) watchLeader(leaderSubaccount)
+
+  void registerTelegramWebhook(PUBLIC_URL, TELEGRAM_WEBHOOK_SECRET)
 
   // ---------------------------------------------------------------- API
 
@@ -243,6 +249,28 @@ async function main() {
     }
     setTelegramChatId(db, copy.id, chatId === null ? null : chatId.trim())
     res.json({ ok: true })
+  })
+
+  // Telegram calls this when a follower taps our bot's deep link
+  // (t.me/<bot>?start=<copyId>) and hits Start — that /start command arrives
+  // here with the copy id as its payload, so we can bind the chat id without
+  // ever asking the user to find or paste a numeric chat id themselves.
+  app.post('/telegram-webhook', (req, res) => {
+    if (req.header('X-Telegram-Bot-Api-Secret-Token') !== TELEGRAM_WEBHOOK_SECRET) return res.sendStatus(401)
+
+    const text = req.body?.message?.text
+    const chatId = req.body?.message?.chat?.id
+    if (typeof text === 'string' && text.startsWith('/start ') && chatId != null) {
+      const copy = getCopy(db, text.slice('/start '.length).trim())
+      if (copy) {
+        setTelegramChatId(db, copy.id, String(chatId))
+        void sendTelegramAlert(
+          String(chatId),
+          `✅ Telegram alerts connected for your copy of ${copy.leaderAddress.slice(0, 8)}…\n\nYou'll get a message here if this copy ever auto-pauses.`,
+        )
+      }
+    }
+    res.sendStatus(200)
   })
 
   app.listen(PORT, () => console.log(`\nNadoZero mirror service listening on :${PORT}`))

@@ -18,23 +18,17 @@ function statusTone(status: CopyRecord['status']): 'up' | 'down' | 'default' {
   return 'default'
 }
 
+const TELEGRAM_BOT_USERNAME = 'Nadozerobot'
+
 function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () => void }) {
   const qc = useQueryClient()
   const [confirmingStop, setConfirmingStop] = useState(false)
-  const [editingTelegram, setEditingTelegram] = useState(false)
-  const [telegramInput, setTelegramInput] = useState(copy.telegramChatId ?? '')
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['my-copies'] })
   const pauseMut = useMutation({ mutationFn: () => pauseCopy(copy.id), onSuccess: invalidate })
   const resumeMut = useMutation({ mutationFn: () => resumeCopy(copy.id), onSuccess: invalidate })
   const stopMut = useMutation({ mutationFn: () => stopCopy(copy.id), onSuccess: invalidate })
-  const telegramMut = useMutation({
-    mutationFn: (chatId: string | null) => setCopyTelegram(copy.id, chatId),
-    onSuccess: () => {
-      invalidate()
-      setEditingTelegram(false)
-    },
-  })
+  const telegramMut = useMutation({ mutationFn: () => setCopyTelegram(copy.id, null), onSuccess: invalidate })
 
   const busy = pauseMut.isPending || resumeMut.isPending || stopMut.isPending
   const { data: pnl } = useAccountPnlSince(copy.followerSubaccount, copy.createdAt)
@@ -67,56 +61,26 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
             </div>
           )}
 
-          {editingTelegram ? (
-            <div className="mt-1.5 flex items-center gap-1.5">
-              <input
-                autoFocus
-                value={telegramInput}
-                onChange={(e) => setTelegramInput(e.target.value)}
-                placeholder="Telegram chat ID"
-                className="w-32 rounded-md border border-ink-600 bg-ink-900 px-2 py-1 text-[11.5px] text-slate-200 placeholder:text-slate-600 focus:border-mint-500/50 focus:outline-none"
-              />
-              <button
-                onClick={() => telegramMut.mutate(telegramInput.trim() || null)}
-                disabled={telegramMut.isPending}
-                className="rounded-md bg-mint-500/[0.12] px-2 py-1 text-[11.5px] font-medium text-mint-400 hover:bg-mint-500/[0.2] disabled:opacity-50"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setTelegramInput(copy.telegramChatId ?? '')
-                  setEditingTelegram(false)
-                }}
-                className="rounded-md px-2 py-1 text-[11.5px] text-slate-500 hover:text-slate-300"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : copy.telegramChatId ? (
+          {copy.telegramChatId ? (
             <div className="mt-1 flex items-center gap-1.5 text-[11.5px] text-slate-500">
               <span>🔔 Telegram alerts on</span>
               <button
-                onClick={() => setEditingTelegram(true)}
-                className="text-slate-500 underline decoration-dotted hover:text-slate-300"
-              >
-                edit
-              </button>
-              <button
-                onClick={() => telegramMut.mutate(null)}
+                onClick={() => telegramMut.mutate()}
                 disabled={telegramMut.isPending}
                 className="text-slate-500 underline decoration-dotted hover:text-[--color-down] disabled:opacity-50"
               >
-                remove
+                disconnect
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => setEditingTelegram(true)}
-              className="mt-1 text-[11.5px] text-slate-500 underline decoration-dotted hover:text-slate-300"
+            <a
+              href={`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${copy.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 inline-block text-[11.5px] text-slate-500 underline decoration-dotted hover:text-slate-300"
             >
-              🔔 Set up Telegram alerts for auto-pause
-            </button>
+              🔔 Connect Telegram alerts — one tap, no typing
+            </a>
           )}
         </div>
       </div>
