@@ -1,0 +1,9 @@
+# Never bake secrets or local state into the image.
+.env.local
+.env
+*.db
+*.db-shm
+*.db-wal
+node_modules
+*.test.ts
+.git

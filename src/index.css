@@ -1,0 +1,168 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@theme {
+  --color-ink-950: #05070a;
+  --color-ink-900: #090c11;
+  --color-ink-850: #0d1117;
+  --color-ink-800: #121722;
+  --color-ink-700: #1b222f;
+  --color-ink-600: #2a3341;
+  --color-ink-500: #3d4859;
+  --color-mint-300: #6ef0c8;
+  --color-mint-400: #3ee0b0;
+  --color-mint-500: #1fcf9c;
+  --color-mint-600: #12a67c;
+  --color-violet-400: #a78bfa;
+  --color-up: #34e08a;
+  --color-down: #ff5c7a;
+
+  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, sans-serif;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink-950);
+  color: #eaf1f8;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+/*
+ * Aurora backdrop — adapted from the widely-used "aurora background" pattern
+ * (repeating diagonal gradient stripes, animated drift, heavy blur so the
+ * stripes dissolve into soft moving color, masked to fade at the edges).
+ * No grid. Layered back to front, fixed so nothing scrolls with content:
+ *  -3  base fill
+ *  -2  aurora: drifting mint/violet/teal light
+ *  -1  film grain — keeps the flat fill from looking cheap
+ *   0  vignette, pulls focus back to center
+ */
+.bg-scene {
+  position: relative;
+  isolation: isolate;
+  background: var(--color-ink-950);
+  overflow-x: hidden;
+}
+
+/*
+ * Perf note: the first version animated `background-position` on a
+ * full-viewport, heavily-blurred layer — that property can't be
+ * GPU-composited, so the browser was repainting + reblurring a huge area
+ * every frame (this is what caused the lag). Fixed by animating `transform`
+ * instead (compositor-only, ~free) on a smaller, capped-height layer with a
+ * lighter blur and a single filter pass.
+ */
+@keyframes aurora-drift {
+  0%   { transform: translate3d(-4%, -1%, 0) scale(1.08); }
+  50%  { transform: translate3d(3%, 2%, 0) scale(1.15); }
+  100% { transform: translate3d(-4%, -1%, 0) scale(1.08); }
+}
+
+.aurora {
+  position: fixed;
+  top: -12%;
+  left: -12%;
+  width: 124%;
+  height: 62vh;
+  max-height: 620px;
+  z-index: -2;
+  background-image:
+    repeating-linear-gradient(
+      100deg,
+      var(--color-ink-950) 0%,
+      var(--color-ink-950) 7%,
+      transparent 10%,
+      transparent 12%,
+      var(--color-ink-950) 16%
+    ),
+    repeating-linear-gradient(
+      100deg,
+      #2ee0a8 2%,
+      #3ee0b0 10%,
+      #a78bfa 22%,
+      #6ef0c8 32%,
+      #1fcf9c 40%
+    );
+  background-size: 220% 200%, 160% 100%;
+  filter: blur(56px);
+  opacity: 0.32;
+  animation: aurora-drift 40s ease-in-out infinite;
+  mask-image: radial-gradient(ellipse 75% 85% at 50% 0%, black 30%, transparent 90%);
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora { animation: none; }
+}
+
+.bg-grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+.bg-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 15%, transparent 45%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+.card-glow {
+  box-shadow: 0 0 0 1px rgba(62, 224, 176, 0.14), 0 8px 40px -12px rgba(62, 224, 176, 0.25);
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(18, 23, 34, 0.7), rgba(13, 17, 23, 0.7));
+  backdrop-filter: blur(14px);
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+.live-dot { animation: pulse-dot 1.8s ease-in-out infinite; }
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise-in { animation: rise-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+
+@keyframes shimmer {
+  0% { background-position: -300px 0; }
+  100% { background-position: 300px 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, var(--color-ink-800) 0%, var(--color-ink-700) 50%, var(--color-ink-800) 100%);
+  background-size: 300px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-ink-700); border-radius: 6px; border: 2px solid var(--color-ink-950); }
+::-webkit-scrollbar-thumb:hover { background: var(--color-ink-600); }

@@ -1,0 +1,29 @@
+{
+  "name": "nadozero-engine",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "watch": "tsx src/watch-leader.ts",
+    "generate-signer": "tsx src/generate-signer.ts",
+    "generate-master-key": "tsx src/generate-master-key.ts",
+    "mirror": "tsx --env-file=.env.local src/mirror.ts",
+    "serve": "tsx --env-file=.env.local src/server.ts",
+    "test": "tsx --test src/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@nadohq/client": "^0.32.0",
+    "better-sqlite3": "^13.0.3",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "viem": "2.52.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.11",
+    "typescript": "^7.0.2"
+  }
+}
