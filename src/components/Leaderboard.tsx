@@ -92,6 +92,7 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
   const [sort, setSort] = useState<SortKey>('pnlMonth')
   const [selected, setSelected] = useState<LeaderRow | null>(null)
   const [copyTarget, setCopyTarget] = useState<LeaderRow | null>(null)
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const { data, isPending } = useLeaderboard(tape)
 
   const rows = [...(data ?? [])].sort((a, b) => sortValue(b, sort) - sortValue(a, sort))
@@ -126,18 +127,26 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
         title="Full leaderboard"
         desc="Ranked among the most active traders in the live window. Click a row to see their recent trade history. Nothing here is self-reported."
         right={
-          <div className="flex flex-wrap gap-1 rounded-lg border border-ink-700/60 bg-ink-850/80 p-1">
-            {SORTS.map((s) => (
-              <button
-                key={s.key}
-                onClick={() => setSort(s.key)}
-                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                  sort === s.key ? 'bg-mint-500/20 text-mint-400' : 'text-slate-500 hover:text-slate-300'
-                }`}
-              >
-                {s.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap gap-1 rounded-lg border border-ink-700/60 bg-ink-850/80 p-1">
+              {SORTS.map((s) => (
+                <button
+                  key={s.key}
+                  onClick={() => setSort(s.key)}
+                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                    sort === s.key ? 'bg-mint-500/20 text-mint-400' : 'text-slate-500 hover:text-slate-300'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="rounded-lg border border-ink-700/60 bg-ink-850/80 px-2.5 py-1.5 text-xs font-medium text-slate-500 transition-colors hover:text-slate-300"
+            >
+              {showAdvanced ? 'Fewer columns' : 'More columns'}
+            </button>
           </div>
         }
       >
@@ -150,10 +159,34 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
                 <th className="px-3 py-3 text-right font-semibold">Account value</th>
                 <th className="px-3 py-3 text-right font-semibold">7d PnL</th>
                 <th className="px-3 py-3 text-right font-semibold">30d PnL</th>
-                <th className="px-3 py-3 text-right font-semibold">All-time</th>
-                <th className="px-3 py-3 text-center font-semibold">7d equity</th>
-                <th className="px-3 py-3 text-right font-semibold">Live vol</th>
-                <th className="px-3 py-3 text-right font-semibold">Taker</th>
+                <th
+                  className="cursor-help px-3 py-3 text-right font-semibold decoration-dotted underline-offset-4 hover:underline"
+                  title="Realized + unrealized profit and loss since this wallet's first trade on Nado."
+                >
+                  All-time
+                </th>
+                {showAdvanced && (
+                  <th
+                    className="cursor-help px-3 py-3 text-center font-semibold decoration-dotted underline-offset-4 hover:underline"
+                    title="Account value over the last 7 days — shape of the trend, not the exact numbers."
+                  >
+                    7d equity
+                  </th>
+                )}
+                <th
+                  className="cursor-help px-3 py-3 text-right font-semibold decoration-dotted underline-offset-4 hover:underline"
+                  title="Volume from this trader in the current scan window (the last fraction of an hour) — not their lifetime volume."
+                >
+                  Live vol
+                </th>
+                {showAdvanced && (
+                  <th
+                    className="cursor-help px-3 py-3 text-right font-semibold decoration-dotted underline-offset-4 hover:underline"
+                    title="Share of their fills that crossed the spread and paid the taker fee, instead of resting an order and waiting to get filled. Higher usually means faster, more aggressive entries."
+                  >
+                    Taker
+                  </th>
+                )}
                 <th className="px-6 py-3 text-right font-semibold" />
               </tr>
             </thead>
@@ -201,13 +234,17 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
                     <td className={`tnum px-3 py-3 text-right ${p ? pnlColor(p.pnlAll) : ''}`}>
                       {p ? usd(p.pnlAll, { compact: true, sign: true }) : '—'}
                     </td>
-                    <td className="px-3 py-2">
-                      <div className="flex justify-center">
-                        <Sparkline data={p?.curve ?? []} />
-                      </div>
-                    </td>
+                    {showAdvanced && (
+                      <td className="px-3 py-2">
+                        <div className="flex justify-center">
+                          <Sparkline data={p?.curve ?? []} />
+                        </div>
+                      </td>
+                    )}
                     <td className="tnum px-3 py-3 text-right text-slate-400">{usd(r.volume, { compact: true })}</td>
-                    <td className="tnum px-3 py-3 text-right text-slate-500">{pct((r.takerFills / r.fills) * 100, 0)}</td>
+                    {showAdvanced && (
+                      <td className="tnum px-3 py-3 text-right text-slate-500">{pct((r.takerFills / r.fills) * 100, 0)}</td>
+                    )}
                     <td className="px-6 py-3 text-right">
                       <button
                         onClick={(e) => {

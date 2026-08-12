@@ -76,12 +76,15 @@ export function StatTile({
   sub,
   accent,
   icon,
+  tip,
 }: {
   label: string
   value: ReactNode
   sub?: ReactNode
   accent?: boolean
   icon?: ReactNode
+  /** Plain-English explainer for a jargon-y label — shown as a native tooltip on hover. */
+  tip?: string
 }) {
   return (
     <div
@@ -95,7 +98,12 @@ export function StatTile({
         <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-mint-400/20 blur-2xl" />
       )}
       <div className="flex items-center justify-between">
-        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</div>
+        <div
+          title={tip}
+          className={`text-xs font-semibold uppercase tracking-wider text-slate-500 ${tip ? 'cursor-help decoration-dotted underline-offset-4 hover:underline' : ''}`}
+        >
+          {label}
+        </div>
         {icon && <div className={accent ? 'text-mint-400' : 'text-slate-600'}>{icon}</div>}
       </div>
       <div className={`tnum font-display mt-2 text-3xl font-semibold leading-none ${accent ? 'text-mint-300' : 'text-slate-50'}`}>
