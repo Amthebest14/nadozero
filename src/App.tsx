@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Leaderboard } from './components/Leaderboard'
+import { Tracker } from './components/Tracker'
 import { BuilderIntel } from './components/BuilderIntel'
 import { GetStarted } from './components/GetStarted'
 import { MyCopies } from './components/MyCopies'
@@ -17,6 +18,10 @@ const PAGE_META: Record<Tab, { title: string; desc: string }> = {
   leaders: {
     title: 'Trader leaderboard',
     desc: 'Verified, on-chain performance — nothing here is self-reported.',
+  },
+  tracker: {
+    title: 'NadoTracker',
+    desc: 'The biggest orders hitting Nado, live off the public tape — spot a whale, check their record, copy them in one tap.',
   },
   builders: {
     title: 'Builder intel',
@@ -138,6 +143,7 @@ export default function App() {
 
             <div className="rise-in" key={tab}>
               {tab === 'leaders' && <Leaderboard tape={tape} />}
+              {tab === 'tracker' && <Tracker />}
               {tab === 'builders' && <BuilderIntel tape={tape} />}
               {tab === 'copies' && <MyCopies wallet={wallet} />}
               {tab === 'earn' && <Earn wallet={wallet} />}

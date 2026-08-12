@@ -1,12 +1,19 @@
 import { Logo } from './Logo'
 
-export type Tab = 'leaders' | 'builders' | 'copies' | 'earn' | 'start' | 'terms'
+export type Tab = 'leaders' | 'tracker' | 'builders' | 'copies' | 'earn' | 'start' | 'terms'
 
 const NavIcon = {
   leaders: () => (
     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M8 21h8M12 17v4M17 3H7a2 2 0 0 0-2 2v4a7 7 0 0 0 14 0V5a2 2 0 0 0-2-2Z" />
       <path d="M5 6H3a2 2 0 0 0 0 4h2M19 6h2a2 2 0 0 1 0 4h-2" />
+    </svg>
+  ),
+  tracker: () => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
     </svg>
   ),
   builders: () => (
@@ -35,6 +42,7 @@ const NavIcon = {
 
 const NAV: { key: keyof typeof NavIcon; label: string }[] = [
   { key: 'leaders', label: 'Trader leaderboard' },
+  { key: 'tracker', label: 'NadoTracker' },
   { key: 'builders', label: 'Builder intel' },
   { key: 'copies', label: 'My copies' },
   { key: 'earn', label: 'Earn' },

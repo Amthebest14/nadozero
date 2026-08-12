@@ -85,6 +85,20 @@ export function useLeaderboard(tape: TapeStats | undefined) {
   })
 }
 
+/**
+ * Raw recent fills for the NadoTracker feed — separate query from useTape so
+ * the feed can refresh on its own faster cadence without re-triggering the
+ * leaderboard aggregation that hangs off the tape query.
+ */
+export function useWhaleTape(pages = 3) {
+  return useQuery({
+    queryKey: ['whale-tape', pages],
+    queryFn: () => scanTape(pages),
+    staleTime: 45_000,
+    refetchInterval: 60_000,
+  })
+}
+
 /** product_id -> symbol reference data. Rarely changes; cache generously. */
 export function useSymbols() {
   return useQuery<Map<number, SymbolInfo>>({
