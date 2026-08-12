@@ -1,5 +1,6 @@
 import type { TapeStats } from '../lib/nado'
 import { usd } from '../lib/format'
+import { useCountUp } from '../lib/useCountUp'
 
 const Spark = () => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -8,12 +9,18 @@ const Spark = () => (
 )
 
 export function Hero({ tape, onExplore }: { tape: TapeStats | undefined; onExplore: () => void }) {
-  const routedShare = tape && tape.totalVolume ? (tape.routedVolume / tape.totalVolume) * 100 : null
+  const routedShareRaw = tape && tape.totalVolume ? (tape.routedVolume / tape.totalVolume) * 100 : undefined
+
+  // Tweens between successive tape refreshes so live updates read as "live," not a snap —
+  // the first value ever shown (undefined -> real) is never animated, only refresh -> refresh.
+  const volume = useCountUp(tape?.totalVolume)
+  const traders = useCountUp(tape?.uniqueTraders)
+  const routedShare = useCountUp(routedShareRaw)
 
   const proof = [
-    { value: tape ? usd(tape.totalVolume, { compact: true }) : '—', label: 'volume tracked' },
-    { value: tape ? tape.uniqueTraders.toLocaleString() : '—', label: 'verified traders' },
-    { value: routedShare !== null ? `${(100 - routedShare).toFixed(0)}%` : '—', label: 'market unclaimed' },
+    { value: volume !== undefined ? usd(volume, { compact: true }) : '—', label: 'volume tracked' },
+    { value: traders !== undefined ? Math.round(traders).toLocaleString() : '—', label: 'verified traders' },
+    { value: routedShare !== undefined ? `${(100 - routedShare).toFixed(0)}%` : '—', label: 'market unclaimed' },
   ]
 
   return (

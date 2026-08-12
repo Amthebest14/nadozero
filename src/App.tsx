@@ -16,6 +16,7 @@ import { useTape } from './lib/hooks'
 import { useWallet } from './lib/useWallet'
 import { usd } from './lib/format'
 import { defaultSubaccountOf } from './lib/nado'
+import { useCountUp } from './lib/useCountUp'
 
 const PAGE_META: Record<Tab, { title: string; desc: string }> = {
   leaders: {
@@ -95,8 +96,14 @@ export default function App() {
     window.history.replaceState(null, '', window.location.pathname)
   }
 
-  const routedShare =
-    tape && tape.totalVolume ? (tape.routedVolume / tape.totalVolume) * 100 : 0
+  const routedShareRaw =
+    tape && tape.totalVolume ? (tape.routedVolume / tape.totalVolume) * 100 : undefined
+
+  // Same tween-between-refreshes pattern as Hero — independent RAF loops, negligible cost.
+  const volume = useCountUp(tape?.totalVolume)
+  const traders = useCountUp(tape?.uniqueTraders)
+  const routedShare = useCountUp(routedShareRaw)
+
   const meta = PAGE_META[tab]
 
   return (
@@ -137,26 +144,26 @@ export default function App() {
               <StatTile
                 icon={<Icon.Pulse />}
                 label="Volume scanned"
-                value={tape ? usd(tape.totalVolume, { compact: true }) : '—'}
+                value={volume !== undefined ? usd(volume, { compact: true }) : '—'}
                 sub={tape?.windowHours ? `last ${tape.windowHours.toFixed(1)} hours of fills` : `${tape?.totalFills ?? 0} fills`}
               />
               <StatTile
                 icon={<Icon.Users />}
                 label="Active traders"
-                value={tape ? tape.uniqueTraders.toLocaleString() : '—'}
+                value={traders !== undefined ? Math.round(traders).toLocaleString() : '—'}
                 sub="unique wallets in the window"
               />
               <StatTile
                 icon={<Icon.Route />}
                 label="Routed by builders"
-                value={tape ? `${routedShare.toFixed(1)}%` : '—'}
+                value={routedShare !== undefined ? `${routedShare.toFixed(1)}%` : '—'}
                 sub={`${tape?.builders.filter((b) => b.builderId).length ?? 0} builder codes seen`}
               />
               <StatTile
                 accent
                 icon={<Icon.Spark />}
                 label="Unrouted opportunity"
-                value={tape ? `${(100 - routedShare).toFixed(1)}%` : '—'}
+                value={routedShare !== undefined ? `${(100 - routedShare).toFixed(1)}%` : '—'}
                 sub="volume no builder has captured"
               />
             </div>

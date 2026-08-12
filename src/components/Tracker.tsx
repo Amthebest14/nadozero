@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useIdxCalibration, useSymbols, useWhaleTape, type LeaderRow } from '../lib/hooks'
 import {
   addressOf,
@@ -95,6 +95,26 @@ export function Tracker() {
   const totalNotional = whales.reduce((a, o) => a + o.notional, 0)
   const biggest = whales.reduce<WhaleOrder | null>((a, o) => (a && a.notional >= o.notional ? a : o), null)
 
+  // Flash rows that are new since the last poll — but never on first load, where
+  // every row would be "new" and the whole feed would flash at once (noise, not signal).
+  const [freshDigests, setFreshDigests] = useState<Set<string>>(new Set())
+  const seenRef = useRef<Set<string> | null>(null)
+  useEffect(() => {
+    if (!matches) return
+    const current = new Set(groupIntoOrders(matches).map((o) => o.digest))
+    if (seenRef.current === null) {
+      seenRef.current = current
+      return
+    }
+    const fresh = new Set<string>()
+    for (const d of current) if (!seenRef.current.has(d)) fresh.add(d)
+    seenRef.current = current
+    if (fresh.size === 0) return
+    setFreshDigests(fresh)
+    const t = setTimeout(() => setFreshDigests(new Set()), 1400)
+    return () => clearTimeout(t)
+  }, [matches])
+
   return (
     <div className="space-y-4">
       {!isPending && whales.length > 0 && (
@@ -169,11 +189,14 @@ export function Tracker() {
                 </tr>
               </thead>
               <tbody>
-                {whales.map((o) => (
+                {whales.map((o, i) => (
                   <tr
                     key={o.digest}
                     onClick={() => setSelected(o)}
-                    className="group cursor-pointer border-b border-ink-800/50 transition-colors last:border-0 hover:bg-ink-850/50"
+                    style={{ animationDelay: `${Math.min(i, 18) * 22}ms` }}
+                    className={`rise-in group cursor-pointer border-b border-ink-800/50 transition-colors last:border-0 hover:bg-ink-850/50 ${
+                      freshDigests.has(o.digest) ? 'flash-new' : ''
+                    }`}
                   >
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-2.5">

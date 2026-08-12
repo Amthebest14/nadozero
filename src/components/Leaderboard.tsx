@@ -165,7 +165,8 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
                   <tr
                     key={r.address}
                     onClick={() => setSelected(r)}
-                    className="group cursor-pointer border-b border-ink-800/50 transition-colors last:border-0 hover:bg-ink-850/50"
+                    style={{ animationDelay: `${Math.min(i, 18) * 22}ms` }}
+                    className="rise-in group cursor-pointer border-b border-ink-800/50 transition-colors last:border-0 hover:bg-ink-850/50"
                   >
                     <td className="px-6 py-3">
                       <RankBadge rank={rank} />

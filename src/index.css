@@ -152,6 +152,14 @@ body {
 }
 .rise-in { animation: rise-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 
+/* Brief highlight for a row that just appeared in a live feed — paint-only,
+   scoped to one small element, not a continuous/full-viewport animation. */
+@keyframes flash-new {
+  0% { background-color: rgba(62, 224, 176, 0.16); }
+  100% { background-color: transparent; }
+}
+.flash-new { animation: flash-new 1.4s ease-out; }
+
 @keyframes shimmer {
   0% { background-position: -300px 0; }
   100% { background-position: 300px 0; }
