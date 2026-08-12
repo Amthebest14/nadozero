@@ -3,7 +3,7 @@ import { useLeaderboard, type LeaderRow } from '../lib/hooks'
 import { defaultSubaccountOf, primarySubaccount, shortAddr, type TapeStats } from '../lib/nado'
 import { pct, pnlColor, usd } from '../lib/format'
 import { Avatar, Panel, Pill, RankBadge, Skeleton, Sparkline } from './ui'
-import { TradeHistoryModal } from './TradeHistoryModal'
+import { ProfileModal } from './ProfileModal'
 import { CopyModal } from './CopyModal'
 
 type SortKey = 'pnlWeek' | 'pnlMonth' | 'pnlAll' | 'volume'
@@ -81,7 +81,7 @@ function SpotlightCard({
           onClick={onViewHistory}
           className="w-full rounded-lg border border-ink-600 bg-ink-800/60 py-2 text-[12px] font-medium text-slate-300 transition-colors hover:border-slate-500 hover:text-slate-100"
         >
-          View trades
+          View profile
         </button>
       </div>
     </div>
@@ -227,7 +227,7 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
       </Panel>
 
       {selected && (
-        <TradeHistoryModal
+        <ProfileModal
           address={selected.address}
           subaccount={subaccountOf(selected)}
           onClose={() => setSelected(null)}

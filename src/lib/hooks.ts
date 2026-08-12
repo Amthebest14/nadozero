@@ -17,7 +17,14 @@ import {
   type TapeStats,
   type TraderRow,
 } from './nado'
-import { fetchNlpLockedBalances, fetchNlpPoolInfo, type NlpLockedBalances, type NlpPool } from './gateway'
+import {
+  fetchAccountSnapshot,
+  fetchNlpLockedBalances,
+  fetchNlpPoolInfo,
+  type AccountSnapshot,
+  type NlpLockedBalances,
+  type NlpPool,
+} from './gateway'
 
 /** How many 500-fill pages of the global tape to walk. 8 ≈ 4,000 fills. */
 export const TAPE_PAGES = 8
@@ -96,6 +103,33 @@ export function useWhaleTape(pages = 3) {
     queryFn: () => scanTape(pages),
     staleTime: 45_000,
     refetchInterval: 60_000,
+  })
+}
+
+/** Live positions + balances + equity for one subaccount, from the sequencer. */
+export function useAccountSnapshot(subaccount: string | null) {
+  return useQuery<AccountSnapshot>({
+    queryKey: ['account-snapshot', subaccount],
+    enabled: !!subaccount,
+    queryFn: () => fetchAccountSnapshot(subaccount!),
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+  })
+}
+
+/** One trader's portfolio history summary — for profiles and the Portfolio tab. */
+export function usePortfolioSummary(subaccount: string | null) {
+  return useQuery<PortfolioSummary | null>({
+    queryKey: ['portfolio-summary', subaccount],
+    enabled: !!subaccount,
+    staleTime: 60_000,
+    queryFn: async () => {
+      try {
+        return summarisePortfolio(await fetchPortfolio(subaccount!))
+      } catch {
+        return null
+      }
+    },
   })
 }
 

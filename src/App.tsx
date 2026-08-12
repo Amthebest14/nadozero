@@ -4,6 +4,8 @@ import { Tracker } from './components/Tracker'
 import { BuilderIntel } from './components/BuilderIntel'
 import { GetStarted } from './components/GetStarted'
 import { MyCopies } from './components/MyCopies'
+import { Portfolio } from './components/Portfolio'
+import { ProfileModal } from './components/ProfileModal'
 import { Earn } from './components/Earn'
 import { Terms } from './components/Terms'
 import { Sidebar, type Tab } from './components/Sidebar'
@@ -13,6 +15,7 @@ import { StatTile } from './components/ui'
 import { useTape } from './lib/hooks'
 import { useWallet } from './lib/useWallet'
 import { usd } from './lib/format'
+import { defaultSubaccountOf } from './lib/nado'
 
 const PAGE_META: Record<Tab, { title: string; desc: string }> = {
   leaders: {
@@ -30,6 +33,10 @@ const PAGE_META: Record<Tab, { title: string; desc: string }> = {
   copies: {
     title: 'My copies',
     desc: 'The traders you\'re copying, and what the mirror service is doing on your behalf.',
+  },
+  portfolio: {
+    title: 'Portfolio',
+    desc: 'Your own positions, balances and PnL — read straight from the sequencer, shareable as a card.',
   },
   earn: {
     title: 'Earn',
@@ -70,10 +77,23 @@ const Icon = {
   ),
 }
 
+/** ?trader=0x… deep link — lets a PnL card or copied profile link open straight onto that trader. */
+function traderFromUrl(): string | null {
+  const t = new URLSearchParams(window.location.search).get('trader')
+  return t && /^0x[0-9a-fA-F]{40}$/.test(t) ? t.toLowerCase() : null
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>('leaders')
+  const [profileTarget, setProfileTarget] = useState<string | null>(traderFromUrl)
   const wallet = useWallet()
   const { data: tape, isPending, isFetching } = useTape()
+
+  const closeProfile = () => {
+    setProfileTarget(null)
+    // drop the ?trader= param so refresh/back doesn't reopen a closed profile
+    window.history.replaceState(null, '', window.location.pathname)
+  }
 
   const routedShare =
     tape && tape.totalVolume ? (tape.routedVolume / tape.totalVolume) * 100 : 0
@@ -146,6 +166,7 @@ export default function App() {
               {tab === 'tracker' && <Tracker />}
               {tab === 'builders' && <BuilderIntel tape={tape} />}
               {tab === 'copies' && <MyCopies wallet={wallet} />}
+              {tab === 'portfolio' && <Portfolio wallet={wallet} />}
               {tab === 'earn' && <Earn wallet={wallet} />}
               {tab === 'start' && <GetStarted wallet={wallet} />}
               {tab === 'terms' && <Terms />}
@@ -163,6 +184,14 @@ export default function App() {
           </div>
         </main>
       </div>
+
+      {profileTarget && (
+        <ProfileModal
+          address={profileTarget}
+          subaccount={defaultSubaccountOf(profileTarget)}
+          onClose={closeProfile}
+        />
+      )}
     </div>
   )
 }

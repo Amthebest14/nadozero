@@ -118,6 +118,96 @@ export async function fetchSubaccountUsdt0Balance(subaccount: string): Promise<b
   return usdt0 ? BigInt(usdt0.balance.amount) : 0n
 }
 
+// ---------------------------------------------------------------- positions
+
+export interface PerpPosition {
+  productId: number
+  /** signed base amount — negative = short */
+  amount: number
+  oraclePrice: number
+  notional: number
+  unrealizedPnl: number
+}
+
+export interface SpotHolding {
+  productId: number
+  amount: number
+  valueUsd: number
+}
+
+export interface AccountSnapshot {
+  exists: boolean
+  /** unweighted assets - liabilities, same healths[2] tier the rest of the app uses */
+  accountValue: number
+  perps: PerpPosition[]
+  spots: SpotHolding[]
+}
+
+const x18 = (v: string) => Number(v) / 1e18
+
+/**
+ * Open positions, balances and equity in ONE gateway call — subaccount_info
+ * also carries every product's oracle price and funding state, so no separate
+ * price query is needed. Perp uPnL = amount * oracle + v_quote, minus the
+ * funding accrued since the position was last touched (v_quote is only
+ * settled up to last_cumulative_funding).
+ */
+export async function fetchAccountSnapshot(subaccount: string): Promise<AccountSnapshot> {
+  const res = await query<{
+    data: {
+      exists: boolean
+      healths: { assets: string; liabilities: string }[]
+      spot_balances: { product_id: number; balance: { amount: string } }[]
+      perp_balances: {
+        product_id: number
+        balance: { amount: string; v_quote_balance: string; last_cumulative_funding_x18: string }
+      }[]
+      spot_products: { product_id: number; oracle_price_x18: string }[]
+      perp_products: {
+        product_id: number
+        oracle_price_x18: string
+        state: { cumulative_funding_long_x18: string }
+      }[]
+    }
+  }>({ type: 'subaccount_info', subaccount })
+
+  const d = res?.data
+  if (!d?.exists) return { exists: false, accountValue: 0, perps: [], spots: [] }
+
+  const perpProducts = new Map(d.perp_products.map((p) => [p.product_id, p]))
+  const spotPrices = new Map(d.spot_products.map((p) => [p.product_id, x18(p.oracle_price_x18)]))
+
+  const perps: PerpPosition[] = d.perp_balances
+    .filter((b) => b.balance.amount !== '0')
+    .map((b) => {
+      const p = perpProducts.get(b.product_id)
+      const amount = x18(b.balance.amount)
+      const oraclePrice = p ? x18(p.oracle_price_x18) : 0
+      const fundingOwed = p
+        ? amount * (x18(p.state.cumulative_funding_long_x18) - x18(b.balance.last_cumulative_funding_x18))
+        : 0
+      return {
+        productId: b.product_id,
+        amount,
+        oraclePrice,
+        notional: Math.abs(amount) * oraclePrice,
+        unrealizedPnl: amount * oraclePrice + x18(b.balance.v_quote_balance) - fundingOwed,
+      }
+    })
+    .sort((a, b) => b.notional - a.notional)
+
+  const spots: SpotHolding[] = d.spot_balances
+    .filter((b) => b.balance.amount !== '0')
+    .map((b) => {
+      const amount = x18(b.balance.amount)
+      return { productId: b.product_id, amount, valueUsd: amount * (spotPrices.get(b.product_id) ?? 0) }
+    })
+    .sort((a, b) => b.valueUsd - a.valueUsd)
+
+  const h = d.healths[2]
+  return { exists: true, accountValue: h ? x18(h.assets) - x18(h.liabilities) : 0, perps, spots }
+}
+
 declare global {
   interface Window {
     ethereum?: {

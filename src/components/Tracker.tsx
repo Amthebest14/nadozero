@@ -11,7 +11,7 @@ import {
 } from '../lib/nado'
 import { usd } from '../lib/format'
 import { Avatar, Panel, Pill, Skeleton } from './ui'
-import { TradeHistoryModal } from './TradeHistoryModal'
+import { ProfileModal } from './ProfileModal'
 import { CopyModal } from './CopyModal'
 
 const THRESHOLDS = [1_000, 5_000, 10_000, 50_000]
@@ -227,7 +227,7 @@ export function Tracker() {
       </Panel>
 
       {selected && (
-        <TradeHistoryModal
+        <ProfileModal
           address={selected.address}
           subaccount={selected.senderSubaccount}
           onClose={() => setSelected(null)}
