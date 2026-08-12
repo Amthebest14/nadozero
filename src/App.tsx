@@ -125,10 +125,10 @@ export default function App() {
             ) : (
               /* -------------------------------------------------------- page header */
               <div className="rise-in mb-7">
-                <h1 className="font-display text-[22px] font-semibold tracking-tight text-slate-50">
+                <h1 className="font-display text-2xl font-semibold tracking-tight text-slate-50">
                   {meta.title}
                 </h1>
-                <p className="mt-1 text-[13px] text-slate-500">{meta.desc}</p>
+                <p className="mt-1 text-sm text-slate-500">{meta.desc}</p>
               </div>
             )}
 
@@ -173,7 +173,7 @@ export default function App() {
             </div>
 
             {/* ----------------------------------------------------------- footer */}
-            <footer className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-ink-800/60 pt-6 text-[11px] text-slate-600">
+            <footer className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-ink-800/60 pt-6 text-xs text-slate-600">
               <p>Leaderboard and builder data are read-only. Copying is real — a linked signer trades your subaccount.</p>
               <p>
                 <a href="https://docs.nado.xyz" target="_blank" rel="noreferrer" className="text-slate-500 underline-offset-2 hover:text-mint-400 hover:underline">

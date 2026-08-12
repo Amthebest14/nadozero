@@ -43,11 +43,11 @@ function SpotlightCard({
             <a
               href={`https://explorer.inkonchain.com/address/${row.address}`}
               target="_blank" rel="noreferrer"
-              className="tnum block whitespace-nowrap text-[13px] font-medium text-slate-200 hover:text-mint-400"
+              className="tnum block whitespace-nowrap text-sm font-medium text-slate-200 hover:text-mint-400"
             >
               {shortAddr(row.address)}
             </a>
-            <div className="whitespace-nowrap text-[10.5px] text-slate-500">
+            <div className="whitespace-nowrap text-xs text-slate-500">
               {row.fills} fills · {p?.markets ?? 0} markets
             </div>
           </div>
@@ -56,7 +56,7 @@ function SpotlightCard({
       </div>
 
       <div className="mt-4">
-        <div className="text-[10.5px] font-semibold uppercase tracking-wider text-slate-500">30d PnL</div>
+        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">30d PnL</div>
         <div className={`tnum font-display mt-0.5 text-2xl font-semibold ${p ? pnlColor(p.pnlMonth) : ''}`}>
           {p ? usd(p.pnlMonth, { compact: true, sign: true }) : '—'}
         </div>
@@ -65,21 +65,21 @@ function SpotlightCard({
       <div className="mt-3 flex items-center justify-between">
         <Sparkline data={p?.curve ?? []} width={110} height={30} />
         <div className="text-right">
-          <div className="text-[10px] text-slate-600">account value</div>
-          <div className="tnum text-[12.5px] text-slate-300">{p ? usd(p.accountValue, { compact: true }) : '—'}</div>
+          <div className="text-xs text-slate-600">account value</div>
+          <div className="tnum text-sm text-slate-300">{p ? usd(p.accountValue, { compact: true }) : '—'}</div>
         </div>
       </div>
 
       <div className="mt-4 space-y-1.5">
         <button
           onClick={onCopy}
-          className="w-full rounded-lg border border-mint-500/30 bg-mint-500/[0.1] py-2 text-[12px] font-medium text-mint-400 transition-colors hover:bg-mint-500/[0.18]"
+          className="w-full rounded-lg border border-mint-500/30 bg-mint-500/[0.1] py-2 text-sm font-medium text-mint-400 transition-colors hover:bg-mint-500/[0.18]"
         >
           Copy this trader
         </button>
         <button
           onClick={onViewHistory}
-          className="w-full rounded-lg border border-ink-600 bg-ink-800/60 py-2 text-[12px] font-medium text-slate-300 transition-colors hover:border-slate-500 hover:text-slate-100"
+          className="w-full rounded-lg border border-ink-600 bg-ink-800/60 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-slate-500 hover:text-slate-100"
         >
           View profile
         </button>
@@ -131,7 +131,7 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
               <button
                 key={s.key}
                 onClick={() => setSort(s.key)}
-                className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   sort === s.key ? 'bg-mint-500/20 text-mint-400' : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
@@ -144,7 +144,7 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[960px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-ink-700/50 text-[10.5px] uppercase tracking-wider text-slate-600">
+              <tr className="border-b border-ink-700/50 text-xs uppercase tracking-wider text-slate-600">
                 <th className="w-12 px-6 py-3 text-left font-semibold">Rank</th>
                 <th className="px-3 py-3 text-left font-semibold">Trader</th>
                 <th className="px-3 py-3 text-right font-semibold">Account value</th>
@@ -178,11 +178,11 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
                             href={`https://explorer.inkonchain.com/address/${r.address}`}
                             target="_blank" rel="noreferrer"
                             onClick={(e) => e.stopPropagation()}
-                            className="tnum text-slate-200 transition-colors hover:text-mint-400"
+                            className="tnum whitespace-nowrap text-slate-200 transition-colors hover:text-mint-400"
                           >
                             {shortAddr(r.address)}
                           </a>
-                          <div className="text-[10px] text-slate-600">
+                          <div className="whitespace-nowrap text-xs text-slate-600">
                             {r.fills} fills{p?.markets ? ` · ${p.markets} markets` : ''}
                           </div>
                         </div>
@@ -213,7 +213,7 @@ export function Leaderboard({ tape }: { tape: TapeStats | undefined }) {
                           e.stopPropagation()
                           setCopyTarget(r)
                         }}
-                        className="rounded-md border border-mint-500/30 bg-mint-500/[0.08] px-2.5 py-1 text-[11px] font-medium text-mint-400 opacity-0 transition-opacity hover:bg-mint-500/[0.16] group-hover:opacity-100"
+                        className="rounded-md border border-mint-500/30 bg-mint-500/[0.08] px-2.5 py-1 text-xs font-medium text-mint-400 opacity-0 transition-opacity hover:bg-mint-500/[0.16] group-hover:opacity-100"
                       >
                         Copy
                       </button>

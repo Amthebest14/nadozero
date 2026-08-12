@@ -43,26 +43,26 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
               href={`https://explorer.inkonchain.com/address/${copy.leaderAddress}`}
               target="_blank"
               rel="noreferrer"
-              className="tnum text-[13px] font-medium text-slate-200 hover:text-mint-400"
+              className="tnum text-sm font-medium text-slate-200 hover:text-mint-400"
             >
               {shortAddr(copy.leaderAddress)}
             </a>
             <Pill tone={statusTone(copy.status)}>{copy.status}</Pill>
           </div>
-          <div className="mt-0.5 text-[11.5px] text-slate-500">
+          <div className="mt-0.5 text-xs text-slate-500">
             {sizingLabel(copy)} · max {(copy.maxSlippagePct * 100).toFixed(2)}% slippage
             {copy.maxPositionUsd !== null && ` · $${copy.maxPositionUsd} position cap`} · started{' '}
             {timeAgo(new Date(copy.createdAt))}
           </div>
           {copy.status === 'paused' && copy.lastError && (
-            <div className="mt-1 text-[11.5px] text-[--color-down]">
+            <div className="mt-1 text-xs text-[--color-down]">
               {copy.lastError}
               {copy.lastErrorAt && ` · ${timeAgo(new Date(copy.lastErrorAt))}`}
             </div>
           )}
 
           {copy.telegramChatId ? (
-            <div className="mt-1 flex items-center gap-1.5 text-[11.5px] text-slate-500">
+            <div className="mt-1 flex items-center gap-1.5 text-xs text-slate-500">
               <span>🔔 Telegram alerts on</span>
               <button
                 onClick={() => telegramMut.mutate()}
@@ -77,7 +77,7 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
               href={`https://t.me/${TELEGRAM_BOT_USERNAME}?start=${copy.id}`}
               target="_blank"
               rel="noreferrer"
-              className="mt-1 inline-block text-[11.5px] text-slate-500 underline decoration-dotted hover:text-slate-300"
+              className="mt-1 inline-block text-xs text-slate-500 underline decoration-dotted hover:text-slate-300"
             >
               🔔 Connect Telegram alerts — one tap, no typing
             </a>
@@ -87,15 +87,15 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
 
       {pnl && pnl.fillCount > 0 && (
         <div className="text-right" title="Your account's net PnL minus fees since this copy started — if you're running more than one copy at once, this reflects the whole account, not just this relationship">
-          <div className="text-[10px] uppercase tracking-wider text-slate-500">Net since started</div>
-          <div className={`tnum text-[14px] font-medium ${pnlColor(pnl.netUsd)}`}>{usd(pnl.netUsd, { sign: true })}</div>
+          <div className="text-xs uppercase tracking-wider text-slate-500">Net since started</div>
+          <div className={`tnum text-base font-medium ${pnlColor(pnl.netUsd)}`}>{usd(pnl.netUsd, { sign: true })}</div>
         </div>
       )}
 
       <div className="flex items-center gap-2">
         <button
           onClick={onViewTrades}
-          className="rounded-lg border border-ink-600 px-3 py-1.5 text-[12px] font-medium text-slate-300 hover:border-slate-500"
+          className="rounded-lg border border-ink-600 px-3 py-1.5 text-sm font-medium text-slate-300 hover:border-slate-500"
         >
           View my trades
         </button>
@@ -103,7 +103,7 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
           <button
             onClick={() => pauseMut.mutate()}
             disabled={busy}
-            className="rounded-lg border border-ink-600 px-3 py-1.5 text-[12px] font-medium text-slate-300 hover:border-slate-500 disabled:opacity-50"
+            className="rounded-lg border border-ink-600 px-3 py-1.5 text-sm font-medium text-slate-300 hover:border-slate-500 disabled:opacity-50"
           >
             Pause
           </button>
@@ -111,7 +111,7 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
           <button
             onClick={() => resumeMut.mutate()}
             disabled={busy}
-            className="rounded-lg border border-mint-500/30 bg-mint-500/[0.08] px-3 py-1.5 text-[12px] font-medium text-mint-400 hover:bg-mint-500/[0.16] disabled:opacity-50"
+            className="rounded-lg border border-mint-500/30 bg-mint-500/[0.08] px-3 py-1.5 text-sm font-medium text-mint-400 hover:bg-mint-500/[0.16] disabled:opacity-50"
           >
             Resume
           </button>
@@ -122,13 +122,13 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
               <button
                 onClick={() => stopMut.mutate()}
                 disabled={busy}
-                className="rounded-lg border border-[--color-down]/30 bg-[--color-down]/[0.1] px-3 py-1.5 text-[12px] font-medium text-[--color-down] disabled:opacity-50"
+                className="rounded-lg border border-[--color-down]/30 bg-[--color-down]/[0.1] px-3 py-1.5 text-sm font-medium text-[--color-down] disabled:opacity-50"
               >
                 Confirm stop
               </button>
               <button
                 onClick={() => setConfirmingStop(false)}
-                className="rounded-lg border border-ink-700 px-3 py-1.5 text-[12px] text-slate-500 hover:text-slate-300"
+                className="rounded-lg border border-ink-700 px-3 py-1.5 text-sm text-slate-500 hover:text-slate-300"
               >
                 Cancel
               </button>
@@ -136,7 +136,7 @@ function CopyRow({ copy, onViewTrades }: { copy: CopyRecord; onViewTrades: () =>
           ) : (
             <button
               onClick={() => setConfirmingStop(true)}
-              className="rounded-lg border border-ink-700 px-3 py-1.5 text-[12px] font-medium text-slate-500 hover:border-[--color-down]/40 hover:text-[--color-down]"
+              className="rounded-lg border border-ink-700 px-3 py-1.5 text-sm font-medium text-slate-500 hover:border-[--color-down]/40 hover:text-[--color-down]"
             >
               Stop
             </button>
@@ -164,7 +164,7 @@ export function MyCopies({ wallet }: { wallet: WalletState }) {
           <button
             onClick={() => wallet.connect()}
             disabled={wallet.busy}
-            className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-[13px] font-semibold text-ink-950 disabled:opacity-50"
+            className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-sm font-semibold text-ink-950 disabled:opacity-50"
           >
             {wallet.busy ? 'Connecting…' : 'Connect wallet to see your copies'}
           </button>
@@ -179,11 +179,11 @@ export function MyCopies({ wallet }: { wallet: WalletState }) {
         {isPending ? (
           <Skeleton rows={3} />
         ) : isError ? (
-          <div className="p-6 text-[13px] text-[--color-down]">
+          <div className="p-6 text-sm text-[--color-down]">
             {error instanceof Error ? error.message : 'Could not load your copies.'}
           </div>
         ) : !copies?.length ? (
-          <div className="p-10 text-center text-[13px] text-slate-500">
+          <div className="p-10 text-center text-sm text-slate-500">
             You're not copying anyone yet — head to the leaderboard and click "Copy this trader."
           </div>
         ) : (

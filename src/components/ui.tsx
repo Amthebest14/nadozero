@@ -11,7 +11,7 @@ export function Sparkline({
   height?: number
 }) {
   if (!data || data.length < 2) {
-    return <div style={{ width, height }} className="grid place-items-center text-[10px] text-slate-700">no data</div>
+    return <div style={{ width, height }} className="grid place-items-center text-xs text-slate-700">no data</div>
   }
   const min = Math.min(...data)
   const max = Math.max(...data)
@@ -67,7 +67,7 @@ export function RankBadge({ rank }: { rank: number }) {
   if (rank <= 3) {
     return <span className="text-base leading-none">{MEDALS[rank - 1]}</span>
   }
-  return <span className="tnum text-[13px] text-slate-600">{rank}</span>
+  return <span className="tnum text-sm text-slate-600">{rank}</span>
 }
 
 export function StatTile({
@@ -95,13 +95,13 @@ export function StatTile({
         <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-mint-400/20 blur-2xl" />
       )}
       <div className="flex items-center justify-between">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-500">{label}</div>
+        <div className="text-xs font-semibold uppercase tracking-wider text-slate-500">{label}</div>
         {icon && <div className={accent ? 'text-mint-400' : 'text-slate-600'}>{icon}</div>}
       </div>
-      <div className={`tnum font-display mt-2 text-[26px] font-semibold leading-none ${accent ? 'text-mint-300' : 'text-slate-50'}`}>
+      <div className={`tnum font-display mt-2 text-3xl font-semibold leading-none ${accent ? 'text-mint-300' : 'text-slate-50'}`}>
         {value}
       </div>
-      {sub && <div className="mt-1.5 text-[11px] text-slate-500">{sub}</div>}
+      {sub && <div className="mt-1.5 text-xs text-slate-500">{sub}</div>}
     </div>
   )
 }
@@ -121,8 +121,8 @@ export function Panel({
     <section className="overflow-hidden rounded-2xl border border-ink-700/60 bg-ink-900/50 glass">
       <header className="flex flex-wrap items-end justify-between gap-3 border-b border-ink-700/50 px-6 py-5">
         <div>
-          <h2 className="font-display text-[17px] font-semibold tracking-tight text-slate-50">{title}</h2>
-          {desc && <p className="mt-1 max-w-2xl text-[12.5px] leading-relaxed text-slate-500">{desc}</p>}
+          <h2 className="font-display text-lg font-semibold tracking-tight text-slate-50">{title}</h2>
+          {desc && <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">{desc}</p>}
         </div>
         {right}
       </header>
@@ -149,7 +149,7 @@ export function Pill({ children, tone = 'default' }: { children: ReactNode; tone
     down: 'border-[--color-down]/30 bg-[--color-down]/10 text-[--color-down]',
   }
   return (
-    <span className={`tnum inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${tones[tone]}`}>
+    <span className={`tnum inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${tones[tone]}`}>
       {children}
     </span>
   )

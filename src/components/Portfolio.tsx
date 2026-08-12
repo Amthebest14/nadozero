@@ -22,7 +22,7 @@ export function Portfolio({ wallet }: { wallet: WalletState }) {
           <button
             onClick={() => wallet.connect()}
             disabled={wallet.busy}
-            className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-[13px] font-semibold text-ink-950 disabled:opacity-50"
+            className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-sm font-semibold text-ink-950 disabled:opacity-50"
           >
             {wallet.busy ? 'Connecting…' : 'Connect wallet to see your portfolio'}
           </button>
@@ -44,7 +44,7 @@ export function Portfolio({ wallet }: { wallet: WalletState }) {
           ['30d PnL', summary ? usd(summary.pnlMonth, { sign: true }) : '—', summary ? pnlColor(summary.pnlMonth) : 'text-slate-100'],
         ].map(([label, value, tone]) => (
           <div key={label} className="rounded-2xl border border-ink-700/60 bg-ink-900/70 p-4">
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">{label}</div>
+            <div className="text-xs uppercase tracking-wider text-slate-500">{label}</div>
             <div className={`tnum font-display mt-1 text-xl font-semibold ${tone}`}>{value}</div>
           </div>
         ))}
@@ -65,14 +65,14 @@ export function Portfolio({ wallet }: { wallet: WalletState }) {
           <div className="flex gap-2">
             <button
               onClick={() => setShowTrades(true)}
-              className="rounded-lg border border-ink-600 px-3 py-1.5 text-[12px] font-medium text-slate-300 hover:border-slate-500"
+              className="rounded-lg border border-ink-600 px-3 py-1.5 text-sm font-medium text-slate-300 hover:border-slate-500"
             >
               My trades
             </button>
             <button
               onClick={() => setSharing(true)}
               disabled={!summary}
-              className="rounded-lg border border-mint-500/30 bg-mint-500/[0.1] px-3 py-1.5 text-[12px] font-medium text-mint-400 hover:bg-mint-500/[0.18] disabled:opacity-40"
+              className="rounded-lg border border-mint-500/30 bg-mint-500/[0.1] px-3 py-1.5 text-sm font-medium text-mint-400 hover:bg-mint-500/[0.18] disabled:opacity-40"
             >
               Share PnL card
             </button>
@@ -82,12 +82,12 @@ export function Portfolio({ wallet }: { wallet: WalletState }) {
         {isPending ? (
           <Skeleton rows={4} />
         ) : !snap?.perps.length ? (
-          <div className="p-8 text-center text-[13px] text-slate-500">No open positions.</div>
+          <div className="p-8 text-center text-sm text-slate-500">No open positions.</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-ink-700/50 text-[10.5px] uppercase tracking-wider text-slate-600">
+                <tr className="border-b border-ink-700/50 text-xs uppercase tracking-wider text-slate-600">
                   <th className="px-6 py-3 text-left font-semibold">Market</th>
                   <th className="px-3 py-3 text-left font-semibold">Side</th>
                   <th className="px-3 py-3 text-right font-semibold">Size</th>
@@ -124,7 +124,7 @@ export function Portfolio({ wallet }: { wallet: WalletState }) {
           <div className="overflow-x-auto">
             <table className="w-full min-w-[420px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-ink-700/50 text-[10.5px] uppercase tracking-wider text-slate-600">
+                <tr className="border-b border-ink-700/50 text-xs uppercase tracking-wider text-slate-600">
                   <th className="px-6 py-3 text-left font-semibold">Asset</th>
                   <th className="px-3 py-3 text-right font-semibold">Amount</th>
                   <th className="px-6 py-3 text-right font-semibold">Value</th>

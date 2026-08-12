@@ -28,13 +28,13 @@ export function WalletButton({ wallet }: { wallet: WalletState }) {
             wallet.disconnect()
             setConfirming(false)
           }}
-          className="rounded-full border border-[--color-down]/30 bg-[--color-down]/[0.1] px-3 py-1.5 text-[12.5px] font-medium text-[--color-down] hover:bg-[--color-down]/[0.18]"
+          className="rounded-full border border-[--color-down]/30 bg-[--color-down]/[0.1] px-3 py-1.5 text-sm font-medium text-[--color-down] hover:bg-[--color-down]/[0.18]"
         >
           Disconnect
         </button>
         <button
           onClick={() => setConfirming(false)}
-          className="rounded-full border border-ink-700/70 px-3 py-1.5 text-[12.5px] text-slate-500 hover:text-slate-300"
+          className="rounded-full border border-ink-700/70 px-3 py-1.5 text-sm text-slate-500 hover:text-slate-300"
         >
           Cancel
         </button>
@@ -42,7 +42,7 @@ export function WalletButton({ wallet }: { wallet: WalletState }) {
     ) : (
       <button
         onClick={() => setConfirming(true)}
-        className="flex items-center gap-2 rounded-full border border-ink-700/70 bg-ink-900/80 py-1 pl-1.5 pr-3.5 text-[12.5px] font-medium text-slate-300 transition-colors hover:border-ink-600"
+        className="flex items-center gap-2 rounded-full border border-ink-700/70 bg-ink-900/80 py-1 pl-1.5 pr-3.5 text-sm font-medium text-slate-300 transition-colors hover:border-ink-600"
         title="Click to disconnect"
       >
         <Avatar seed={wallet.account} size={22} />
@@ -55,7 +55,7 @@ export function WalletButton({ wallet }: { wallet: WalletState }) {
     <button
       onClick={() => wallet.connect()}
       disabled={wallet.busy}
-      className="flex items-center gap-2 rounded-full border border-mint-500/30 bg-mint-500/[0.08] py-1.5 pl-3 pr-4 text-[12.5px] font-medium text-mint-400 transition-colors hover:bg-mint-500/[0.16] disabled:opacity-50"
+      className="flex items-center gap-2 rounded-full border border-mint-500/30 bg-mint-500/[0.08] py-1.5 pl-3 pr-4 text-sm font-medium text-mint-400 transition-colors hover:bg-mint-500/[0.16] disabled:opacity-50"
     >
       <WalletIcon />
       {wallet.busy ? 'Connecting…' : 'Connect wallet'}

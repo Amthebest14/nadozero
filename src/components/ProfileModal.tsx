@@ -69,17 +69,17 @@ export function ProfileModal({
                 href={`https://explorer.inkonchain.com/address/${address}`}
                 target="_blank"
                 rel="noreferrer"
-                className="tnum text-[14px] font-medium text-slate-100 hover:text-mint-400"
+                className="tnum text-base font-medium text-slate-100 hover:text-mint-400"
               >
                 {shortAddr(address)}
               </a>
-              <div className="text-[11px] text-slate-500">Trader profile — verified from Nado's public archive</div>
+              <div className="text-xs text-slate-500">Trader profile — verified from Nado's public archive</div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={copyLink}
-              className="rounded-lg border border-ink-600 px-3 py-1.5 text-[11.5px] font-medium text-slate-400 hover:border-slate-500 hover:text-slate-200"
+              className="rounded-lg border border-ink-600 px-3 py-1.5 text-xs font-medium text-slate-400 hover:border-slate-500 hover:text-slate-200"
             >
               {linkCopied ? 'Copied ✓' : 'Copy link'}
             </button>
@@ -106,22 +106,22 @@ export function ProfileModal({
                   ['All-time PnL', summary ? usd(summary.pnlAll, { compact: true, sign: true }) : '—', summary ? pnlColor(summary.pnlAll) : ''],
                 ].map(([label, value, tone]) => (
                   <div key={label} className="rounded-xl border border-ink-700/60 bg-ink-850/50 p-3">
-                    <div className="text-[10px] uppercase tracking-wider text-slate-500">{label}</div>
-                    <div className={`tnum mt-1 text-[16px] font-semibold ${tone || 'text-slate-100'}`}>{value}</div>
+                    <div className="text-xs uppercase tracking-wider text-slate-500">{label}</div>
+                    <div className={`tnum mt-1 text-lg font-semibold ${tone || 'text-slate-100'}`}>{value}</div>
                   </div>
                 ))}
               </div>
 
               {summary && summary.curve.length >= 2 && (
                 <div className="mt-4 rounded-xl border border-ink-700/60 bg-ink-850/50 p-4">
-                  <div className="mb-2 text-[10px] uppercase tracking-wider text-slate-500">7d account value</div>
+                  <div className="mb-2 text-xs uppercase tracking-wider text-slate-500">7d account value</div>
                   <Sparkline data={summary.curve} width={560} height={64} />
                 </div>
               )}
 
               {positions.length > 0 && (
                 <div className="mt-4">
-                  <div className="mb-2 text-[10px] uppercase tracking-wider text-slate-500">
+                  <div className="mb-2 text-xs uppercase tracking-wider text-slate-500">
                     Open positions right now
                   </div>
                   <div className="space-y-1.5">
@@ -131,21 +131,21 @@ export function ProfileModal({
                         className="flex items-center justify-between rounded-lg border border-ink-800/70 bg-ink-900/60 px-3 py-2"
                       >
                         <div className="flex items-center gap-2.5">
-                          <span className="text-[12.5px] text-slate-300">
+                          <span className="text-sm text-slate-300">
                             {symbols?.get(p.productId)?.symbol ?? `#${p.productId}`}
                           </span>
                           <Pill tone={p.amount > 0 ? 'up' : 'down'}>{p.amount > 0 ? 'Long' : 'Short'}</Pill>
                         </div>
                         <div className="flex items-center gap-4">
-                          <span className="tnum text-[12.5px] text-slate-400">{usd(p.notional, { compact: true })}</span>
-                          <span className={`tnum text-[12.5px] ${pnlColor(p.unrealizedPnl)}`}>
+                          <span className="tnum text-sm text-slate-400">{usd(p.notional, { compact: true })}</span>
+                          <span className={`tnum text-sm ${pnlColor(p.unrealizedPnl)}`}>
                             {usd(p.unrealizedPnl, { sign: true })}
                           </span>
                         </div>
                       </div>
                     ))}
                     {snap && snap.perps.length > positions.length && (
-                      <div className="text-[11px] text-slate-600">
+                      <div className="text-xs text-slate-600">
                         + {snap.perps.length - positions.length} more positions
                       </div>
                     )}
@@ -156,20 +156,20 @@ export function ProfileModal({
               <div className="mt-5 flex flex-wrap gap-2">
                 <button
                   onClick={() => setCopying(true)}
-                  className="flex-1 rounded-lg border border-mint-500/30 bg-mint-500/[0.1] py-2.5 text-[12.5px] font-medium text-mint-400 transition-colors hover:bg-mint-500/[0.18]"
+                  className="flex-1 rounded-lg border border-mint-500/30 bg-mint-500/[0.1] py-2.5 text-sm font-medium text-mint-400 transition-colors hover:bg-mint-500/[0.18]"
                 >
                   Copy this trader
                 </button>
                 <button
                   onClick={() => setShowTrades(true)}
-                  className="flex-1 rounded-lg border border-ink-600 bg-ink-800/60 py-2.5 text-[12.5px] font-medium text-slate-300 transition-colors hover:border-slate-500"
+                  className="flex-1 rounded-lg border border-ink-600 bg-ink-800/60 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:border-slate-500"
                 >
                   View trades
                 </button>
                 <button
                   onClick={() => setSharing(true)}
                   disabled={!summary}
-                  className="flex-1 rounded-lg border border-ink-600 bg-ink-800/60 py-2.5 text-[12.5px] font-medium text-slate-300 transition-colors hover:border-slate-500 disabled:opacity-40"
+                  className="flex-1 rounded-lg border border-ink-600 bg-ink-800/60 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:border-slate-500 disabled:opacity-40"
                 >
                   Share PnL card
                 </button>

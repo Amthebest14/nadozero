@@ -4,7 +4,7 @@ export function Terms() {
   return (
     <div className="space-y-4">
       <Panel title="What NadoZero actually holds">
-        <div className="space-y-3 p-6 text-[13px] leading-relaxed text-slate-300">
+        <div className="space-y-3 p-6 text-sm leading-relaxed text-slate-300">
           <p>
             NadoZero never holds your funds. Every deposit goes directly into a subaccount on Nado's own
             contracts, owned by your own wallet address — the same as if you'd used app.nado.xyz directly. If
@@ -22,7 +22,7 @@ export function Terms() {
       </Panel>
 
       <Panel title="What a linked signer can and can't do">
-        <div className="space-y-3 p-6 text-[13px] leading-relaxed text-slate-300">
+        <div className="space-y-3 p-6 text-sm leading-relaxed text-slate-300">
           <p>
             A linked signer has full trading permission on your subaccount — it can open and close positions
             exactly like you could. Per Nado's own documentation, it can also <em>initiate</em> withdrawals — but
@@ -37,7 +37,7 @@ export function Terms() {
       </Panel>
 
       <Panel title="Real risks — please actually read this">
-        <div className="space-y-3 p-6 text-[13px] leading-relaxed text-slate-300">
+        <div className="space-y-3 p-6 text-sm leading-relaxed text-slate-300">
           <p>
             <strong className="text-slate-100">Copying can lose money.</strong> A leader's past performance,
             however impressive, is not a promise of future results. You are taking on the same market risk they
@@ -69,7 +69,7 @@ export function Terms() {
       </Panel>
 
       <Panel title="Your responsibility">
-        <div className="space-y-3 p-6 text-[13px] leading-relaxed text-slate-400">
+        <div className="space-y-3 p-6 text-sm leading-relaxed text-slate-400">
           <p>Only deposit what you can afford to lose entirely. Check in on active copies periodically — don't treat "automatic" as "unattended forever." If something looks wrong, Pause or Stop first and ask questions after; both take effect immediately.</p>
         </div>
       </Panel>

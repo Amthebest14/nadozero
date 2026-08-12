@@ -236,19 +236,19 @@ export function PnlCard({
         <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
           <button
             onClick={copyLink}
-            className="rounded-lg border border-ink-600 px-4 py-2 text-[12.5px] font-medium text-slate-300 hover:border-slate-500"
+            className="rounded-lg border border-ink-600 px-4 py-2 text-sm font-medium text-slate-300 hover:border-slate-500"
           >
             {linkCopied ? 'Link copied ✓' : 'Copy profile link'}
           </button>
           <button
             onClick={download}
-            className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-4 py-2 text-[12.5px] font-semibold text-ink-950"
+            className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-4 py-2 text-sm font-semibold text-ink-950"
           >
             Download PNG
           </button>
           <button
             onClick={onClose}
-            className="rounded-lg border border-ink-700 px-4 py-2 text-[12.5px] text-slate-500 hover:text-slate-300"
+            className="rounded-lg border border-ink-700 px-4 py-2 text-sm text-slate-500 hover:text-slate-300"
           >
             Close
           </button>

@@ -100,21 +100,21 @@ export function Tracker() {
       {!isPending && whales.length > 0 && (
         <div className="grid gap-3.5 sm:grid-cols-3">
           <div className="rounded-2xl border border-ink-700/60 bg-ink-900/70 p-4">
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">Whale orders in window</div>
+            <div className="text-xs uppercase tracking-wider text-slate-500">Whale orders in window</div>
             <div className="tnum font-display mt-1 text-xl font-semibold text-slate-100">{whales.length}</div>
           </div>
           <div className="rounded-2xl border border-ink-700/60 bg-ink-900/70 p-4">
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">Whale volume</div>
+            <div className="text-xs uppercase tracking-wider text-slate-500">Whale volume</div>
             <div className="tnum font-display mt-1 text-xl font-semibold text-slate-100">
               {usd(totalNotional, { compact: true })}
             </div>
           </div>
           <div className="rounded-2xl border border-mint-500/25 bg-mint-500/[0.06] p-4">
-            <div className="text-[10px] uppercase tracking-wider text-slate-500">Biggest single order</div>
+            <div className="text-xs uppercase tracking-wider text-slate-500">Biggest single order</div>
             <div className="tnum font-display mt-1 text-xl font-semibold text-mint-400">
               {biggest ? usd(biggest.notional, { compact: true }) : '—'}
               {biggest && (
-                <span className="ml-2 text-[12px] font-normal text-slate-400">
+                <span className="ml-2 text-sm font-normal text-slate-400">
                   {symbols?.get(biggest.productId)?.symbol ?? `#${biggest.productId}`}
                 </span>
               )}
@@ -132,7 +132,7 @@ export function Tracker() {
               <button
                 key={t}
                 onClick={() => setThreshold(t)}
-                className={`rounded-md px-2.5 py-1 text-[11px] font-medium transition-colors ${
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   threshold === t ? 'bg-mint-500/20 text-mint-400' : 'text-slate-500 hover:text-slate-300'
                 }`}
               >
@@ -145,14 +145,14 @@ export function Tracker() {
         {isPending ? (
           <Skeleton rows={10} />
         ) : whales.length === 0 ? (
-          <div className="p-10 text-center text-[13px] text-slate-500">
+          <div className="p-10 text-center text-sm text-slate-500">
             No orders ≥ {usd(threshold, { compact: true })} in the current window — try a lower threshold.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] border-collapse text-sm">
               <thead>
-                <tr className="border-b border-ink-700/50 text-[10.5px] uppercase tracking-wider text-slate-600">
+                <tr className="border-b border-ink-700/50 text-xs uppercase tracking-wider text-slate-600">
                   <th className="px-6 py-3 text-left font-semibold">Trader</th>
                   <th className="px-3 py-3 text-left font-semibold">Market</th>
                   <th className="px-3 py-3 text-left font-semibold">Side</th>
@@ -183,7 +183,7 @@ export function Tracker() {
                           target="_blank"
                           rel="noreferrer"
                           onClick={(e) => e.stopPropagation()}
-                          className="tnum text-slate-200 transition-colors hover:text-mint-400"
+                          className="tnum whitespace-nowrap text-slate-200 transition-colors hover:text-mint-400"
                         >
                           {shortAddr(o.address)}
                         </a>
@@ -204,7 +204,7 @@ export function Tracker() {
                       {usd(o.notional, { compact: true })}
                     </td>
                     <td className="tnum px-3 py-3 text-right text-slate-500">{o.fillCount}</td>
-                    <td className="px-3 py-3 text-right text-[11.5px] text-slate-500">
+                    <td className="px-3 py-3 text-right text-xs text-slate-500">
                       {calibration ? timeAgo(estimateTimestamp(o.newestIdx, calibration)) : '…'}
                     </td>
                     <td className="px-6 py-3 text-right">
@@ -213,7 +213,7 @@ export function Tracker() {
                           e.stopPropagation()
                           setCopyTarget(o)
                         }}
-                        className="rounded-md border border-mint-500/30 bg-mint-500/[0.08] px-2.5 py-1 text-[11px] font-medium text-mint-400 opacity-0 transition-opacity hover:bg-mint-500/[0.16] group-hover:opacity-100"
+                        className="rounded-md border border-mint-500/30 bg-mint-500/[0.08] px-2.5 py-1 text-xs font-medium text-mint-400 opacity-0 transition-opacity hover:bg-mint-500/[0.16] group-hover:opacity-100"
                       >
                         Copy
                       </button>

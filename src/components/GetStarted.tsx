@@ -96,7 +96,7 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-mint-500/25 bg-mint-500/[0.06] px-4 py-3 text-[12.5px] leading-relaxed text-slate-300">
+      <div className="rounded-xl border border-mint-500/25 bg-mint-500/[0.06] px-4 py-3 text-sm leading-relaxed text-slate-300">
         Want to copy a trader? Head to the <strong className="text-mint-400">leaderboard</strong> and click{' '}
         <strong className="text-mint-400">"Copy this trader"</strong> — deposit, key setup, and linking all
         happen there in one guided flow. This page is just for checking your wallet's current status.
@@ -111,7 +111,7 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
             <button
               onClick={() => wallet.connect()}
               disabled={wallet.busy}
-              className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-[13px] font-semibold text-ink-950 disabled:opacity-50"
+              className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-sm font-semibold text-ink-950 disabled:opacity-50"
             >
               {wallet.busy ? 'Connecting…' : 'Connect wallet'}
             </button>
@@ -120,11 +120,11 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
               <div className="flex items-center justify-between rounded-xl border border-ink-700/60 bg-ink-850/50 px-4 py-3">
                 <div className="flex items-center gap-2.5">
                   <Avatar seed={account} size={28} />
-                  <span className="tnum text-[13px] text-slate-200">{shortAddr(account)}</span>
+                  <span className="tnum text-sm text-slate-200">{shortAddr(account)}</span>
                 </div>
                 <Pill tone="down">unverified</Pill>
               </div>
-              <p className="text-[12.5px] leading-relaxed text-slate-500">
+              <p className="text-sm leading-relaxed text-slate-500">
                 Wallet connections can be silent on some extensions, so an address alone doesn't prove a real
                 person is actually here. Nothing about your account is shown until you approve one signature —
                 it moves no funds and grants no trading permission, it only proves presence.
@@ -132,7 +132,7 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
               <button
                 onClick={() => wallet.reverify()}
                 disabled={wallet.busy}
-                className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-[13px] font-semibold text-ink-950 disabled:opacity-50"
+                className="rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 px-5 py-2.5 text-sm font-semibold text-ink-950 disabled:opacity-50"
               >
                 {wallet.busy ? 'Waiting for signature…' : 'Verify wallet'}
               </button>
@@ -142,7 +142,7 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
               <div className="flex items-center justify-between rounded-xl border border-ink-700/60 bg-ink-850/50 px-4 py-3">
                 <div className="flex items-center gap-2.5">
                   <Avatar seed={account} size={28} />
-                  <span className="tnum text-[13px] text-slate-200">{shortAddr(account)}</span>
+                  <span className="tnum text-sm text-slate-200">{shortAddr(account)}</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Pill tone="up">verified</Pill>
@@ -152,7 +152,7 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between text-[13px]">
+              <div className="flex items-center justify-between text-sm">
                 <span className="text-slate-500">Current linked signer</span>
                 <span className="tnum text-slate-300">
                   {currentSigner === 'loading' ? 'checking…' : (currentSigner ?? 'none set (main wallet only)')}
@@ -163,18 +163,18 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
                 <button
                   onClick={onRevoke}
                   disabled={status.kind === 'busy'}
-                  className="w-full rounded-lg border border-ink-600 px-4 py-2.5 text-[13px] font-medium text-slate-300 hover:border-slate-500 disabled:opacity-50"
+                  className="w-full rounded-lg border border-ink-600 px-4 py-2.5 text-sm font-medium text-slate-300 hover:border-slate-500 disabled:opacity-50"
                 >
                   Revoke linked signer
                 </button>
               )}
 
               <details className="group rounded-lg border border-ink-700/60">
-                <summary className="cursor-pointer select-none px-4 py-2.5 text-[12px] font-medium text-slate-500 hover:text-slate-300">
+                <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-medium text-slate-500 hover:text-slate-300">
                   Advanced — link a specific address manually
                 </summary>
                 <div className="space-y-3 border-t border-ink-700/60 px-4 py-3.5">
-                  <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.06] px-3 py-2.5 text-[11.5px] leading-relaxed text-slate-400">
+                  <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.06] px-3 py-2.5 text-xs leading-relaxed text-slate-400">
                     <strong className="text-[--color-down]">Only paste an ADDRESS, never a private key.</strong>{' '}
                     64 hex characters means it's a key — stop if you see that.
                   </div>
@@ -183,12 +183,12 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
                     onChange={(e) => setSignerInput(e.target.value)}
                     placeholder="0x…"
                     spellCheck={false}
-                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-[13px] text-slate-200 outline-none focus:border-mint-500/50"
+                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-sm text-slate-200 outline-none focus:border-mint-500/50"
                   />
                   <button
                     onClick={onLink}
                     disabled={status.kind === 'busy' || !signerInput}
-                    className="w-full rounded-lg border border-ink-600 py-2 text-[12.5px] font-medium text-slate-300 hover:border-slate-500 disabled:opacity-50"
+                    className="w-full rounded-lg border border-ink-600 py-2 text-sm font-medium text-slate-300 hover:border-slate-500 disabled:opacity-50"
                   >
                     {status.kind === 'busy' ? 'Waiting for signature…' : 'Link this address'}
                   </button>
@@ -198,17 +198,17 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
           )}
 
           {wallet.error && (
-            <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-[12.5px] text-[--color-down]">
+            <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-sm text-[--color-down]">
               {wallet.error}
             </div>
           )}
           {status.kind === 'success' && (
-            <div className="rounded-lg border border-mint-500/25 bg-mint-500/[0.08] px-3 py-2 text-[12.5px] text-mint-400">
+            <div className="rounded-lg border border-mint-500/25 bg-mint-500/[0.08] px-3 py-2 text-sm text-mint-400">
               {status.msg}
             </div>
           )}
           {status.kind === 'error' && (
-            <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-[12.5px] text-[--color-down]">
+            <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-sm text-[--color-down]">
               {status.msg}
             </div>
           )}
@@ -216,7 +216,7 @@ export function GetStarted({ wallet }: { wallet: WalletState }) {
       </Panel>
 
       <Panel title="Good to know">
-        <div className="space-y-3 p-6 text-[13px] leading-relaxed text-slate-400">
+        <div className="space-y-3 p-6 text-sm leading-relaxed text-slate-400">
           <p>
             A linked signer can trade freely, but per Nado's own docs, withdrawals always return to your main
             wallet address — it can never send funds anywhere else.

@@ -231,7 +231,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
             <Avatar seed={leader.address} size={32} />
             <div>
               <div className="tnum text-sm font-medium text-slate-100">Copy {shortAddr(leader.address)}</div>
-              <div className={`text-[11px] ${p ? pnlColor(p.pnlMonth) : 'text-slate-500'}`}>
+              <div className={`text-xs ${p ? pnlColor(p.pnlMonth) : 'text-slate-500'}`}>
                 {p ? `${usd(p.pnlMonth, { compact: true, sign: true })} 30d PnL` : ''}
               </div>
             </div>
@@ -251,13 +251,13 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
           {step === 'amount' && (
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                   How to size mirrored trades
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => setMode('fixed')}
-                    className={`rounded-lg border px-3 py-2.5 text-left text-[12.5px] font-medium transition-colors ${
+                    className={`rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors ${
                       mode === 'fixed'
                         ? 'border-mint-500/50 bg-mint-500/[0.1] text-mint-400'
                         : 'border-ink-600 text-slate-400 hover:border-slate-500'
@@ -267,7 +267,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                   </button>
                   <button
                     onClick={() => setMode('proportional')}
-                    className={`rounded-lg border px-3 py-2.5 text-left text-[12.5px] font-medium transition-colors ${
+                    className={`rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition-colors ${
                       mode === 'proportional'
                         ? 'border-mint-500/50 bg-mint-500/[0.1] text-mint-400'
                         : 'border-ink-600 text-slate-400 hover:border-slate-500'
@@ -280,7 +280,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
 
               {mode === 'fixed' ? (
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Amount per trade (USDT0)
                   </label>
                   <input
@@ -289,9 +289,9 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                     step="0.01"
                     value={fixedUsd}
                     onChange={(e) => setFixedUsd(e.target.value)}
-                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-[14px] text-slate-200 outline-none focus:border-mint-500/50"
+                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-base text-slate-200 outline-none focus:border-mint-500/50"
                   />
-                  <p className="mt-1.5 text-[11px] text-slate-600">
+                  <p className="mt-1.5 text-xs text-slate-600">
                     Every trade this leader makes, you trade this same dollar amount — regardless of how big
                     their trade is. Recommended when copying a much larger account.
                   </p>
@@ -302,7 +302,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                     if (feePct < 3) return null
                     const hourlyBurn = ESTIMATED_FLAT_FEE_USD * leaderFreq.fillsPerHour
                     return (
-                      <div className="mt-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2.5 text-[11.5px] leading-relaxed text-amber-300">
+                      <div className="mt-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2.5 text-xs leading-relaxed text-amber-300">
                         <strong>This leader trades often</strong> — about {leaderFreq.fillsPerHour.toFixed(0)}×/hour
                         recently. Nado charges a flat ~${ESTIMATED_FLAT_FEE_USD.toFixed(3)} per order regardless of
                         size, so at ${usdNum} per trade that's ~{feePct.toFixed(1)}% gone to fees alone — roughly $
@@ -314,7 +314,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                 </div>
               ) : (
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Your allocation (USDT0)
                   </label>
                   <input
@@ -322,9 +322,9 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                     min={MIN_USDT0}
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-[14px] text-slate-200 outline-none focus:border-mint-500/50"
+                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-base text-slate-200 outline-none focus:border-mint-500/50"
                   />
-                  <p className="mt-1.5 text-[11px] text-slate-600">
+                  <p className="mt-1.5 text-xs text-slate-600">
                     Mirrors at (your allocation ÷ their current equity) of their size. If they're much larger
                     than your allocation, trades can round down to nothing — Fixed $ avoids that.
                   </p>
@@ -333,7 +333,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Max slippage
                   </label>
                   <div className="relative">
@@ -344,13 +344,13 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                       step="0.01"
                       value={maxSlippagePctInput}
                       onChange={(e) => setMaxSlippagePctInput(e.target.value)}
-                      className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 pr-7 text-[14px] text-slate-200 outline-none focus:border-mint-500/50"
+                      className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 pr-7 text-base text-slate-200 outline-none focus:border-mint-500/50"
                     />
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-slate-500">%</span>
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">%</span>
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                     Max position ($)
                   </label>
                   <input
@@ -359,28 +359,28 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                     step="0.01"
                     value={maxPositionUsdInput}
                     onChange={(e) => setMaxPositionUsdInput(e.target.value)}
-                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-[14px] text-slate-200 outline-none focus:border-mint-500/50"
+                    className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-base text-slate-200 outline-none focus:border-mint-500/50"
                   />
                 </div>
               </div>
-              <p className="-mt-2 text-[11px] text-slate-600">
+              <p className="-mt-2 text-xs text-slate-600">
                 Max slippage caps how far past the visible price a mirrored order will chase to fill. Max
                 position is a hard ceiling on this copy's notional in any one market — a trade that would push
                 past it is skipped, not resized.
               </p>
 
-              <p className="text-[11px] text-slate-600">
+              <p className="text-xs text-slate-600">
                 Deposit is only requested if your subaccount needs it — if it's already funded, nothing is
                 deposited.
               </p>
 
               {error && (
-                <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-[12px] text-[--color-down]">
+                <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-sm text-[--color-down]">
                   {error}
                 </div>
               )}
 
-              <label className="flex items-start gap-2 text-[11.5px] leading-relaxed text-slate-400">
+              <label className="flex items-start gap-2 text-xs leading-relaxed text-slate-400">
                 <input
                   type="checkbox"
                   checked={risksAcknowledged}
@@ -410,7 +410,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                   runSetup()
                 }}
                 disabled={!risksAcknowledged}
-                className="w-full rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 py-2.5 text-[13px] font-semibold text-ink-950 disabled:opacity-40"
+                className="w-full rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 py-2.5 text-sm font-semibold text-ink-950 disabled:opacity-40"
               >
                 Set up to copy this trader
               </button>
@@ -421,9 +421,9 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
             <div className="space-y-3">
               <div className="flex items-center gap-3 rounded-xl border border-ink-700/60 bg-ink-850/50 px-4 py-4">
                 <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-mint-500 border-t-transparent" />
-                <span className="text-[13px] text-slate-300">{STEP_LABEL[step]}</span>
+                <span className="text-sm text-slate-300">{STEP_LABEL[step]}</span>
               </div>
-              <p className="text-center text-[11px] text-slate-600">
+              <p className="text-center text-xs text-slate-600">
                 {step === 'verifying' || step === 'linking' || step === 'approving' || step === 'depositing'
                   ? 'Check your wallet extension for a prompt.'
                   : 'One moment…'}
@@ -433,20 +433,20 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
 
           {step === 'needs-funds' && (
             <div className="space-y-4">
-              <p className="text-center text-[13px] text-slate-300">
+              <p className="text-center text-sm text-slate-300">
                 This subaccount needs at least <strong>${MIN_USDT0} USDT0</strong> before a signer can be linked.
                 Deposit directly below — two wallet prompts (approve, then deposit).
               </p>
 
               {walletBalance !== null && (
-                <div className="flex items-center justify-between text-[12px]">
+                <div className="flex items-center justify-between text-sm">
                   <span className="text-slate-500">Wallet balance</span>
                   <span className="tnum text-slate-300">{fromRaw(walletBalance).toFixed(2)} USDT0</span>
                 </div>
               )}
 
               <div>
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
                   Amount to deposit
                 </label>
                 <input
@@ -454,19 +454,19 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                   min={MIN_USDT0}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-[14px] text-slate-200 outline-none focus:border-mint-500/50"
+                  className="tnum w-full rounded-lg border border-ink-600 bg-ink-800 px-3 py-2.5 text-base text-slate-200 outline-none focus:border-mint-500/50"
                 />
               </div>
 
               <button
                 onClick={onDeposit}
-                className="w-full rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 py-2.5 text-[13px] font-semibold text-ink-950"
+                className="w-full rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 py-2.5 text-sm font-semibold text-ink-950"
               >
                 Deposit ${amount || '0'} USDT0
               </button>
 
               {error && (
-                <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-[12px] text-[--color-down]">
+                <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2 text-sm text-[--color-down]">
                   {error}
                 </div>
               )}
@@ -475,12 +475,12 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
 
           {step === 'error' && (
             <div className="space-y-3">
-              <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2.5 text-[12.5px] text-[--color-down]">
+              <div className="rounded-lg border border-[--color-down]/25 bg-[--color-down]/[0.08] px-3 py-2.5 text-sm text-[--color-down]">
                 {error}
               </div>
               <button
                 onClick={() => runSetup(account ?? undefined)}
-                className="w-full rounded-lg border border-ink-600 py-2.5 text-[13px] font-medium text-slate-300 hover:border-slate-500"
+                className="w-full rounded-lg border border-ink-600 py-2.5 text-sm font-medium text-slate-300 hover:border-slate-500"
               >
                 Try again
               </button>
@@ -489,12 +489,12 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
 
           {step === 'done' && followerKey && (
             <div className="space-y-4">
-              <div className="rounded-lg border border-mint-500/25 bg-mint-500/[0.08] px-4 py-3 text-[13px] text-mint-400">
+              <div className="rounded-lg border border-mint-500/25 bg-mint-500/[0.08] px-4 py-3 text-sm text-mint-400">
                 You're now copying {shortAddr(leader.address)}
                 {mode === 'fixed' ? ` — $${fixedUsd} per trade` : ` — $${amount} allocated`}.
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-[12px]">
+              <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="rounded-lg border border-ink-700/60 bg-ink-850/50 px-3 py-2">
                   <div className="text-slate-500">Max slippage</div>
                   <div className="tnum text-slate-200">{maxSlippagePctInput}%</div>
@@ -506,12 +506,12 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
               </div>
 
               <div className="rounded-xl border border-ink-700/60 bg-ink-850/50 p-4">
-                <p className="text-[12px] font-semibold text-slate-200">Nothing left to do</p>
-                <p className="mt-1 text-[11.5px] leading-relaxed text-slate-400">
+                <p className="text-sm font-semibold text-slate-200">Nothing left to do</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-400">
                   The signer was generated, linked, and handed straight to the mirror service — you never had
                   to see or save a key. It's watching this leader now and will mirror their trades automatically.
                 </p>
-                <p className="mt-2 text-[11.5px] leading-relaxed text-slate-500">
+                <p className="mt-2 text-xs leading-relaxed text-slate-500">
                   If your account ever runs out of margin to mirror a trade, this pauses itself automatically
                   rather than keep failing silently — you'll see why in{' '}
                   <span className="text-slate-300">My Copies</span>, where you can also manage or stop it
@@ -521,7 +521,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
 
               <button
                 onClick={onClose}
-                className="w-full rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 py-2.5 text-[13px] font-semibold text-ink-950"
+                className="w-full rounded-lg bg-gradient-to-b from-mint-300 to-mint-500 py-2.5 text-sm font-semibold text-ink-950"
               >
                 Done
               </button>

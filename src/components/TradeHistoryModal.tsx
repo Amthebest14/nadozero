@@ -64,7 +64,7 @@ export function TradeHistoryModal({
             <Avatar seed={address} size={34} />
             <div>
               <div className="tnum text-sm font-medium text-slate-100">{shortAddr(address)}</div>
-              <div className="text-[11px] text-slate-500">Recent trade history — most recent 50 fills</div>
+              <div className="text-xs text-slate-500">Recent trade history — most recent 50 fills</div>
             </div>
           </div>
           <button
@@ -79,16 +79,16 @@ export function TradeHistoryModal({
         {!isPending && rows.length > 0 && (
           <div className="grid grid-cols-3 gap-3 border-b border-ink-700/60 px-6 py-3.5 text-center">
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-500">Volume shown</div>
-              <div className="tnum mt-0.5 text-[15px] font-medium text-slate-200">{usd(totalVolume, { compact: true })}</div>
+              <div className="text-xs uppercase tracking-wider text-slate-500">Volume shown</div>
+              <div className="tnum mt-0.5 text-base font-medium text-slate-200">{usd(totalVolume, { compact: true })}</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-500">Fees shown</div>
-              <div className="tnum mt-0.5 text-[15px] font-medium text-slate-400">{usd(totalFees)}</div>
+              <div className="text-xs uppercase tracking-wider text-slate-500">Fees shown</div>
+              <div className="tnum mt-0.5 text-base font-medium text-slate-400">{usd(totalFees)}</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-slate-500">Realized PnL shown</div>
-              <div className={`tnum mt-0.5 text-[15px] font-medium ${pnlColor(totalPnl)}`}>
+              <div className="text-xs uppercase tracking-wider text-slate-500">Realized PnL shown</div>
+              <div className={`tnum mt-0.5 text-base font-medium ${pnlColor(totalPnl)}`}>
                 {usd(totalPnl, { sign: true })}
               </div>
             </div>
@@ -103,7 +103,7 @@ export function TradeHistoryModal({
           ) : (
             <table className="w-full min-w-[560px] border-collapse text-sm">
               <thead className="sticky top-0 bg-ink-900">
-                <tr className="border-b border-ink-700/50 text-[10.5px] uppercase tracking-wider text-slate-600">
+                <tr className="border-b border-ink-700/50 text-xs uppercase tracking-wider text-slate-600">
                   <th className="px-6 py-2.5 text-left font-semibold">Market</th>
                   <th className="px-3 py-2.5 text-left font-semibold">Side</th>
                   <th className="px-3 py-2.5 text-right font-semibold">Size</th>
@@ -122,7 +122,7 @@ export function TradeHistoryModal({
                     <td className="px-6 py-2.5 text-slate-300">
                       {r.symbol ?? `#${r.productId}`}
                       {r.builderId ? (
-                        <span className="ml-1.5 text-[10px] text-mint-500/70">builder #{r.builderId}</span>
+                        <span className="ml-1.5 text-xs text-mint-500/70">builder #{r.builderId}</span>
                       ) : null}
                     </td>
                     <td className="px-3 py-2.5">
@@ -139,7 +139,7 @@ export function TradeHistoryModal({
                     <td className={`tnum px-3 py-2.5 text-right ${r.pnl ? pnlColor(r.pnl) : 'text-slate-600'}`}>
                       {r.pnl ? usd(r.pnl, { sign: true }) : '—'}
                     </td>
-                    <td className="px-6 py-2.5 text-right text-[11.5px] text-slate-500" title={r.when?.toLocaleString()}>
+                    <td className="px-6 py-2.5 text-right text-xs text-slate-500" title={r.when?.toLocaleString()}>
                       {r.when ? timeAgo(r.when) : '…'}
                     </td>
                   </tr>

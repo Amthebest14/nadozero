@@ -120,7 +120,7 @@ export function Sidebar({
               <Logo size={20} />
             </div>
             <CollapsingLabel collapsed={collapsed}>
-              <span className="font-display text-[16px] font-semibold tracking-tight text-slate-50">
+              <span className="font-display text-lg font-semibold tracking-tight text-slate-50">
                 Nado<span className="text-mint-400">Zero</span>
               </span>
             </CollapsingLabel>
@@ -134,7 +134,7 @@ export function Sidebar({
           </button>
         </div>
         <CollapsingLabel collapsed={collapsed}>
-          <p className="mt-2 w-[200px] text-[11px] leading-relaxed text-slate-500">
+          <p className="mt-2 w-[200px] text-xs leading-relaxed text-slate-500">
             Zero effort. Zero experience. Just copy.
           </p>
         </CollapsingLabel>
@@ -149,7 +149,7 @@ export function Sidebar({
               key={key}
               onClick={() => onChange(key)}
               title={collapsed ? label : undefined}
-              className={`relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors ${
+              className={`relative flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                 collapsed ? 'justify-center' : ''
               } ${active ? 'text-ink-950' : 'text-slate-400 hover:bg-ink-800/60 hover:text-slate-200'}`}
             >
@@ -173,7 +173,7 @@ export function Sidebar({
         <button
           onClick={() => onChange('terms')}
           title={collapsed ? 'Terms & risks' : undefined}
-          className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors ${
+          className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
             collapsed ? 'justify-center' : ''
           } ${tab === 'terms' ? 'bg-ink-800/60 text-slate-200' : 'text-slate-500 hover:bg-ink-800/60 hover:text-slate-300'}`}
         >
@@ -188,7 +188,7 @@ export function Sidebar({
           target="_blank"
           rel="noreferrer"
           title={collapsed ? 'Nado docs' : undefined}
-          className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-[13px] font-medium text-slate-500 transition-colors hover:bg-ink-800/60 hover:text-slate-300 ${
+          className={`flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-500 transition-colors hover:bg-ink-800/60 hover:text-slate-300 ${
             collapsed ? 'justify-center' : ''
           }`}
         >
@@ -207,7 +207,7 @@ export function Sidebar({
         >
           <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isFetching ? 'live-dot bg-mint-400' : 'bg-mint-600'}`} />
           <CollapsingLabel collapsed={collapsed}>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-xs text-slate-500">
               {isPending ? 'reading mainnet…' : isFetching ? 'refreshing' : 'live · Ink mainnet'}
             </span>
           </CollapsingLabel>
