@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { shortAddr, type PortfolioSummary } from '../lib/nado'
 import { usd } from '../lib/format'
+import { LOGO_BLADE_PATH, LOGO_GRADIENT } from './Logo'
 
 const W = 840
 const H = 440
@@ -8,6 +9,48 @@ const SCALE = 2 // draw at 2x so the downloaded PNG is crisp
 
 const MINT = '#3ee0b0'
 const RED = '#ff6b81'
+
+/**
+ * The real NadoZero mark, drawn from the same path Logo.tsx renders — Path2D
+ * takes SVG path strings directly, so this is pixel-for-pixel the same shape
+ * as the sidebar icon, not a redrawn approximation. `badge` draws it the way
+ * the sidebar does: a soft glow + rounded dark tile behind the mark.
+ */
+function drawLogo(ctx: CanvasRenderingContext2D, x: number, y: number, size: number, badge = true) {
+  ctx.save()
+
+  if (badge) {
+    const r = size * 0.28
+    const glow = ctx.createRadialGradient(x + size / 2, y + size / 2, 0, x + size / 2, y + size / 2, size * 1.1)
+    glow.addColorStop(0, 'rgba(62,224,176,0.35)')
+    glow.addColorStop(1, 'rgba(62,224,176,0)')
+    ctx.fillStyle = glow
+    ctx.fillRect(x - size * 0.4, y - size * 0.4, size * 1.8, size * 1.8)
+
+    ctx.fillStyle = '#0a1512'
+    ctx.beginPath()
+    ctx.roundRect(x, y, size, size, r)
+    ctx.fill()
+  }
+
+  // inset the mark within its tile — matches the sidebar's icon padding
+  const inset = badge ? size * 0.16 : 0
+  ctx.translate(x + inset, y + inset)
+  const markSize = size - inset * 2
+  ctx.scale(markSize / 100, markSize / 100)
+
+  const grad = ctx.createLinearGradient(10, 5, 90, 95)
+  grad.addColorStop(0, LOGO_GRADIENT[0])
+  grad.addColorStop(1, LOGO_GRADIENT[1])
+  ctx.fillStyle = grad
+  for (let i = 0; i < 3; i++) {
+    ctx.fill(new Path2D(LOGO_BLADE_PATH))
+    ctx.translate(50, 50)
+    ctx.rotate((2 * Math.PI) / 3)
+    ctx.translate(-50, -50)
+  }
+  ctx.restore()
+}
 
 function drawCard(ctx: CanvasRenderingContext2D, address: string, s: PortfolioSummary) {
   ctx.scale(SCALE, SCALE)
@@ -31,12 +74,20 @@ function drawCard(ctx: CanvasRenderingContext2D, address: string, s: PortfolioSu
   ctx.roundRect(1, 1, W - 2, H - 2, 23)
   ctx.stroke()
 
-  // wordmark
-  ctx.font = '600 24px "Space Grotesk", sans-serif'
+  // faint oversized watermark of the mark, tucked in the corner — quiet, not competing with the numbers
+  ctx.save()
+  ctx.globalAlpha = 0.05
+  drawLogo(ctx, W - 210, H - 210, 260, false)
+  ctx.restore()
+
+  // mark + wordmark
+  drawLogo(ctx, 36, 26, 30)
+  ctx.font = '600 21px "Space Grotesk", sans-serif'
   ctx.fillStyle = '#f1f5f9'
-  ctx.fillText('Nado', 36, 56)
+  const wordX = 36 + 30 + 12
+  ctx.fillText('Nado', wordX, 47)
   ctx.fillStyle = MINT
-  ctx.fillText('Zero', 36 + ctx.measureText('Nado').width, 56)
+  ctx.fillText('Zero', wordX + ctx.measureText('Nado').width, 47)
 
   // verified badge, right-aligned
   ctx.font = '500 13px "Space Grotesk", sans-serif'

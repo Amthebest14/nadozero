@@ -3,8 +3,13 @@
  * reads as a vortex (Nado = tornado), a "0" (the shape + negative center),
  * and a copy/mirror motif (one shape, duplicated and rotated) all at once.
  */
+/** The single blade path — exported so canvas renderers (PnlCard) draw the exact same mark. */
+export const LOGO_BLADE_PATH = 'M50,40 C39,38 30,29 30,16 C30,6 39,1 47,7 C52,11 53,22 50,40 Z'
+/** Gradient stops shared with canvas renderings of the mark. */
+export const LOGO_GRADIENT: [string, string] = ['#6ef0c8', '#12a67c']
+
 export function Logo({ size = 32 }: { size?: number }) {
-  const blade = 'M50,40 C39,38 30,29 30,16 C30,6 39,1 47,7 C52,11 53,22 50,40 Z'
+  const blade = LOGO_BLADE_PATH
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" className="shrink-0">
       <defs>
