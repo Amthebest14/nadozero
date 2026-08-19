@@ -27,13 +27,22 @@ const X18 = 1e18
 /** Parse an x18 fixed-point decimal string into a JS number. */
 export const fromX18 = (v: string | number): number => Number(v) / X18
 
+/** Carries the HTTP status so callers can distinguish "rate limited, worth retrying" from any other failure. */
+export class ArchiveError extends Error {
+  status: number
+  constructor(status: number, body: string) {
+    super(`Archive ${status}: ${body}`)
+    this.status = status
+  }
+}
+
 async function archive<T>(body: unknown): Promise<T> {
   const res = await fetch(ARCHIVE, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
-  if (!res.ok) throw new Error(`Archive ${res.status}: ${await res.text()}`)
+  if (!res.ok) throw new ArchiveError(res.status, await res.text())
   return res.json() as Promise<T>
 }
 

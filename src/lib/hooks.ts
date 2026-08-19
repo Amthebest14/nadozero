@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import {
   aggregateTape,
+  ArchiveError,
   defaultSubaccountOf,
   estimateTimestamp,
   fetchIdxCalibration,
@@ -63,10 +64,40 @@ export interface LeaderRow extends TraderRow {
   portfolio: PortfolioSummary | null
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Firing all 25 portfolio lookups in one Promise.all was hitting Nado's
+ * archive rate limit (429) chronically enough to leave PnL permanently
+ * blank for whoever got throttled — the plain `catch { portfolio: null }`
+ * fallback below has no idea a 429 is different from a real failure, so it
+ * never got a second chance. This retries specifically on 429, with backoff,
+ * and only gives up (portfolio: null) after that's exhausted.
+ */
+async function fetchPortfolioResilient(subaccount: string, retries = 2): Promise<PortfolioSummary | null> {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return summarisePortfolio(await fetchPortfolio(subaccount))
+    } catch (e) {
+      const rateLimited = e instanceof ArchiveError && e.status === 429
+      if (!rateLimited || attempt === retries) return null
+      await sleep(500 * (attempt + 1))
+    }
+  }
+  return null
+}
+
 /**
  * Enrich the most active traders from the tape with their verified
  * portfolio history. Ranking happens in the view.
+ *
+ * Deliberately batched (not one big Promise.all of all ENRICH_COUNT
+ * requests) — a burst of 25 simultaneous calls is exactly what was
+ * triggering the archive's rate limit in the first place.
  */
+const LEADERBOARD_BATCH_SIZE = 5
+const LEADERBOARD_BATCH_GAP_MS = 300
+
 export function useLeaderboard(tape: TapeStats | undefined) {
   const top = tape?.traders.slice(0, ENRICH_COUNT) ?? []
   const key = top.map((t) => t.address).join(',')
@@ -76,17 +107,18 @@ export function useLeaderboard(tape: TapeStats | undefined) {
     enabled: top.length > 0,
     staleTime: 60_000,
     queryFn: async () => {
-      const results = await Promise.all(
-        top.map(async (t): Promise<LeaderRow> => {
-          const subaccount = primarySubaccount(t) ?? defaultSubaccountOf(t.address)
-          try {
-            const raw = await fetchPortfolio(subaccount)
-            return { ...t, portfolio: summarisePortfolio(raw) }
-          } catch {
-            return { ...t, portfolio: null }
-          }
-        }),
-      )
+      const results: LeaderRow[] = []
+      for (let i = 0; i < top.length; i += LEADERBOARD_BATCH_SIZE) {
+        const batch = top.slice(i, i + LEADERBOARD_BATCH_SIZE)
+        const batchResults = await Promise.all(
+          batch.map(async (t): Promise<LeaderRow> => {
+            const subaccount = primarySubaccount(t) ?? defaultSubaccountOf(t.address)
+            return { ...t, portfolio: await fetchPortfolioResilient(subaccount) }
+          }),
+        )
+        results.push(...batchResults)
+        if (i + LEADERBOARD_BATCH_SIZE < top.length) await sleep(LEADERBOARD_BATCH_GAP_MS)
+      }
       return results
     },
   })
