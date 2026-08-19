@@ -1,5 +1,7 @@
-import { useCallback, useState } from 'react'
-import { connectWallet, isInkChain, verifyWalletPresence, walletErrorMessage } from './gateway'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useAccount, useDisconnect } from 'wagmi'
+import { useAppKit } from '@reown/appkit/react'
+import { isInkChain, verifyWalletPresence, walletErrorMessage } from './gateway'
 
 /**
  * Single shared connection state for the whole app — the top-right widget
@@ -7,64 +9,87 @@ import { connectWallet, isInkChain, verifyWalletPresence, walletErrorMessage } f
  * from App), so connecting in one place is reflected everywhere else
  * immediately, like a normal wallet button.
  *
+ * Built on wagmi's `useAccount` (reactive — updates for injected AND
+ * WalletConnect/mobile connections alike) rather than a one-shot
+ * window.ethereum call, so this hook itself doesn't drive the connect flow
+ * directly; it reacts to wagmi's state and layers the same forced-signature
+ * verification on top every time a new address appears.
+ *
  * `verified` requires a real signature (see verifyWalletPresence) — connect
  * alone can be silent on some wallets, so it's never trusted by itself.
  */
 export function useWallet() {
-  const [account, setAccount] = useState<string | null>(null)
-  const [chainId, setChainId] = useState<string | null>(null)
+  const { address, chainId, isConnected } = useAccount()
+  const { open } = useAppKit()
+  const { disconnectAsync } = useDisconnect()
+
   const [verified, setVerified] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  /** Which address we've already verified (or are currently verifying) for — avoids re-prompting on every re-render. */
+  const verifiedFor = useRef<string | null>(null)
 
-  const connect = useCallback(async () => {
+  useEffect(() => {
+    if (!isConnected || !address) {
+      verifiedFor.current = null
+      setVerified(false)
+      return
+    }
+    if (verifiedFor.current === address) return
+
+    verifiedFor.current = address
     setBusy(true)
     setError(null)
-    try {
-      const conn = await connectWallet()
-      setAccount(conn.address)
-      setChainId(conn.chainId)
-      await verifyWalletPresence(conn.address)
-      setVerified(true)
-    } catch (e) {
-      setVerified(false)
-      setError(walletErrorMessage(e))
-    } finally {
-      setBusy(false)
-    }
-  }, [])
+    verifyWalletPresence(address)
+      .then(() => setVerified(true))
+      .catch((e) => {
+        setVerified(false)
+        setError(walletErrorMessage(e))
+        verifiedFor.current = null // allow retrying via reverify()
+      })
+      .finally(() => setBusy(false))
+  }, [isConnected, address])
 
-  /** Re-run just the signature check — for recovering from a rejected/failed verify without reconnecting. */
+  /** Opens the wallet-picker modal. Verification runs automatically (above) once wagmi reports a connected address. */
+  const connect = useCallback(() => {
+    setError(null)
+    void open()
+  }, [open])
+
+  /** Re-runs just the signature check — for recovering from a rejected/failed verify without reconnecting. */
   const reverify = useCallback(async () => {
-    if (!account) return
+    if (!address) return
     setBusy(true)
     setError(null)
     try {
-      await verifyWalletPresence(account)
+      await verifyWalletPresence(address)
       setVerified(true)
+      verifiedFor.current = address
     } catch (e) {
       setVerified(false)
       setError(walletErrorMessage(e))
     } finally {
       setBusy(false)
     }
-  }, [account])
+  }, [address])
 
-  /** Clears local app state only — wallets don't expose a real EIP-1193 disconnect. */
+  /** Clears wagmi's connection too — unlike the old window.ethereum flow, a WalletConnect session has a real disconnect. */
   const disconnect = useCallback(() => {
-    setAccount(null)
-    setChainId(null)
     setVerified(false)
     setError(null)
-  }, [])
+    verifiedFor.current = null
+    void disconnectAsync()
+  }, [disconnectAsync])
+
+  const chainIdHex = chainId !== undefined ? `0x${chainId.toString(16)}` : null
 
   return {
-    account,
-    chainId,
+    account: address ?? null,
+    chainId: chainIdHex,
     verified,
     busy,
     error,
-    onWrongNetwork: chainId !== null && !isInkChain(chainId),
+    onWrongNetwork: chainIdHex !== null && !isInkChain(chainIdHex),
     connect,
     reverify,
     disconnect,

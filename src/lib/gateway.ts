@@ -5,8 +5,10 @@
  * Two different kinds of key touch this file, and they're handled very
  * differently:
  *  - The user's own main wallet: NEVER handled directly. Every signature
- *    request goes through window.ethereum, so the key never leaves the
- *    wallet extension.
+ *    request goes through the connected wallet's own EIP-1193 provider
+ *    (obtained via wagmi/Reown AppKit's active connector — injected
+ *    extension or WalletConnect, same interface either way), so the key
+ *    never leaves the wallet.
  *  - A fresh follower signer key: generated right here, in-browser, purely
  *    client-side (generateFollowerSigner). It's disposable and only useful
  *    for a small linked subaccount, but it IS a real private key in memory
@@ -16,6 +18,8 @@
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
 import { createPublicClient, createWalletClient, custom, http, parseUnits } from 'viem'
 import { ink } from 'viem/chains'
+import { getAccount, watchAccount } from '@wagmi/core'
+import { appKit, wagmiConfig } from './wagmiConfig'
 
 export const GATEWAY = 'https://gateway.prod.nado.xyz/v1'
 export const INK_CHAIN_ID_HEX = '0xdef1' // 57073, Ink mainnet
@@ -208,24 +212,68 @@ export async function fetchAccountSnapshot(subaccount: string): Promise<AccountS
   return { exists: true, accountValue: h ? x18(h.assets) - x18(h.liabilities) : 0, perps, spots }
 }
 
-declare global {
-  interface Window {
-    ethereum?: {
-      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
-    }
+interface Eip1193Provider {
+  request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+}
+
+const toHexChainId = (id: number) => `0x${id.toString(16)}`
+
+/**
+ * The active wallet's raw EIP-1193 provider, whatever connector produced it
+ * (injected extension or WalletConnect) — every function below calls
+ * `.request(...)` on this the exact same way regardless of connector type,
+ * which is what let the EIP712/contract-call logic stay unchanged when this
+ * moved off window.ethereum.
+ */
+async function requireWallet(): Promise<Eip1193Provider> {
+  const { connector, isConnected } = getAccount(wagmiConfig)
+  if (!isConnected || !connector) {
+    throw new Error('No wallet connected — click Connect first.')
   }
+  const provider = await connector.getProvider()
+  return provider as Eip1193Provider
 }
 
-function requireWallet() {
-  if (!window.ethereum) throw new Error('No wallet extension detected (install MetaMask, Rabby, or similar).')
-  return window.ethereum
-}
-
+/**
+ * Opens Reown AppKit's wallet-picker modal and resolves once a real
+ * connection completes — kept as one awaitable call (matching the old
+ * window.ethereum-based signature exactly) so CopyModal's imperative
+ * connect→verify→fund→link sequence didn't need restructuring.
+ */
 export async function connectWallet(): Promise<{ address: string; chainId: string }> {
-  const eth = requireWallet()
-  const accounts = (await eth.request({ method: 'eth_requestAccounts' })) as string[]
-  const chainId = (await eth.request({ method: 'eth_chainId' })) as string
-  return { address: accounts[0], chainId }
+  const already = getAccount(wagmiConfig)
+  if (already.isConnected && already.address) {
+    return { address: already.address, chainId: toHexChainId(already.chainId ?? INK_CHAIN_ID) }
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false
+    const unwatchAccount = watchAccount(wagmiConfig, {
+      onChange(account) {
+        if (!settled && account.isConnected && account.address) {
+          settled = true
+          unwatchAccount()
+          unwatchModal()
+          resolve({ address: account.address, chainId: toHexChainId(account.chainId ?? INK_CHAIN_ID) })
+        }
+      },
+    })
+    // If the user closes the modal without connecting, don't hang the caller forever.
+    const unwatchModal = appKit.subscribeState((state) => {
+      if (settled || state.open) return
+      setTimeout(() => {
+        if (settled) return
+        const acc = getAccount(wagmiConfig)
+        if (!acc.isConnected) {
+          settled = true
+          unwatchAccount()
+          unwatchModal()
+          reject(new Error('Wallet connection cancelled.'))
+        }
+      }, 300)
+    })
+    void appKit.open()
+  })
 }
 
 /**
@@ -238,7 +286,7 @@ export async function connectWallet(): Promise<{ address: string; chainId: strin
  * act of the user approving the popup is the point.
  */
 export async function verifyWalletPresence(account: string): Promise<void> {
-  const eth = requireWallet()
+  const eth = await requireWallet()
   const message =
     `Verify wallet control for NadoZero\n\n` +
     `Address: ${account}\n` +
@@ -254,7 +302,7 @@ export async function verifyWalletPresence(account: string): Promise<void> {
  * Always signed by the connected wallet — never by a raw private key.
  */
 export async function linkSigner(account: string, signerBytes32: string) {
-  const eth = requireWallet()
+  const eth = await requireWallet()
   const [contracts, nonces] = await Promise.all([fetchContracts(), fetchNonces(account)])
   const sender = subaccountOf(account)
 
@@ -357,8 +405,8 @@ const DEFAULT_SUBACCOUNT_NAME_BYTES12 = ('0x' + DEFAULT_NAME_HEX) as `0x${string
 
 const publicClient = createPublicClient({ chain: ink, transport: http() })
 
-function walletClient(account: string) {
-  const eth = requireWallet()
+async function walletClient(account: string) {
+  const eth = await requireWallet()
   return createWalletClient({ account: account as `0x${string}`, chain: ink, transport: custom(eth) })
 }
 
@@ -402,7 +450,7 @@ export async function ensureUsdt0Allowance(account: string, amountRaw: bigint): 
   })
   if (current >= amountRaw) return
 
-  const client = walletClient(account)
+  const client = await walletClient(account)
   const hash = await client.writeContract({
     address: token,
     abi: ERC20_ABI,
@@ -415,7 +463,7 @@ export async function ensureUsdt0Allowance(account: string, amountRaw: bigint): 
 /** Deposits `amountRaw` USDT0 (already scaled by usdt0ToRaw) into the caller's default subaccount. */
 export async function depositUsdt0(account: string, amountRaw: bigint): Promise<`0x${string}`> {
   const contracts = await fetchContracts()
-  const client = walletClient(account)
+  const client = await walletClient(account)
   const hash = await client.writeContract({
     address: contracts.endpoint_addr as `0x${string}`,
     abi: ENDPOINT_ABI,
@@ -507,7 +555,7 @@ export async function fetchNlpLockedBalances(subaccount: string): Promise<NlpLoc
 
 /** Deposits `quoteUsd` worth of USDT0 into the NLP vault, minting LP tokens 1:1 with current value. */
 export async function mintNlp(account: string, quoteUsd: number): Promise<{ status: 'success' | 'failure'; error?: string }> {
-  const eth = requireWallet()
+  const eth = await requireWallet()
   const [contracts, nonces] = await Promise.all([fetchContracts(), fetchNonces(account)])
   const sender = subaccountOf(account)
   const quoteAmount = String(BigInt(Math.round(quoteUsd * 1e18)))
@@ -553,7 +601,7 @@ export async function mintNlp(account: string, quoteUsd: number): Promise<{ stat
 
 /** Burns `nlpAmount` LP tokens (up to the caller's unlocked balance), redeeming at current value minus the withdrawal fee. */
 export async function burnNlp(account: string, nlpAmount: number): Promise<{ status: 'success' | 'failure'; error?: string }> {
-  const eth = requireWallet()
+  const eth = await requireWallet()
   const [contracts, nonces] = await Promise.all([fetchContracts(), fetchNonces(account)])
   const sender = subaccountOf(account)
   const amount = String(BigInt(Math.round(nlpAmount * 1e18)))
