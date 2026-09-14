@@ -36,14 +36,60 @@ export class ArchiveError extends Error {
   }
 }
 
-async function archive<T>(body: unknown): Promise<T> {
-  const res = await fetch(ARCHIVE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  if (!res.ok) throw new ArchiveError(res.status, await res.text())
-  return res.json() as Promise<T>
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Global concurrency limit + 429 retry, shared by EVERY archive() caller.
+ *
+ * This app has several independent hooks — the tape scan (8 pages),
+ * NadoTracker's whale feed (3 pages), the leaderboard's portfolio lookups,
+ * idx calibration, trade history — that can all mount and start fetching at
+ * once on a cold load. Each one used to be reasonably well-behaved in
+ * isolation, but their combined concurrent weight was enough to 429 a large
+ * fraction of requests platform-wide (~30 rate-limit errors observed on one
+ * real page load), which is what actually caused data to stay blank — not
+ * any single hook being wrong. Throttling this ONE function, rather than
+ * patching each hook separately, covers every current and future caller by
+ * construction.
+ */
+const MAX_CONCURRENT_ARCHIVE_REQUESTS = 3
+let activeArchiveRequests = 0
+const archiveQueue: (() => void)[] = []
+
+function acquireArchiveSlot(): Promise<void> {
+  if (activeArchiveRequests < MAX_CONCURRENT_ARCHIVE_REQUESTS) {
+    activeArchiveRequests++
+    return Promise.resolve()
+  }
+  return new Promise((resolve) => archiveQueue.push(resolve))
+}
+
+function releaseArchiveSlot() {
+  const next = archiveQueue.shift()
+  if (next) next() // hand the slot straight to the next waiter — activeArchiveRequests count is unchanged
+  else activeArchiveRequests--
+}
+
+async function archive<T>(body: unknown, retries = 2): Promise<T> {
+  await acquireArchiveSlot()
+  try {
+    for (let attempt = 0; ; attempt++) {
+      const res = await fetch(ARCHIVE, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      if (res.ok) return res.json() as Promise<T>
+      const text = await res.text()
+      if (res.status === 429 && attempt < retries) {
+        await sleep(500 * (attempt + 1))
+        continue
+      }
+      throw new ArchiveError(res.status, text)
+    }
+  } finally {
+    releaseArchiveSlot()
+  }
 }
 
 // ---------------------------------------------------------------- appendix
