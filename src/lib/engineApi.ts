@@ -22,6 +22,7 @@ export interface CopyRecord {
   leaderEquityAtSignup: number | null
   maxSlippagePct: number
   maxPositionUsd: number | null
+  maxLeverageMultiplier: number | null
   status: 'active' | 'paused' | 'stopped'
   /** Set when the service auto-paused this copy (insufficient account health) — null otherwise, including manual pauses. */
   lastError: string | null
@@ -52,6 +53,7 @@ export interface RegisterCopyInput {
   fixedUsd?: number
   maxSlippagePct?: number
   maxPositionUsd: number
+  maxLeverageMultiplier: number
 }
 
 export const registerCopy = (input: RegisterCopyInput) =>

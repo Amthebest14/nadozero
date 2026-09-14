@@ -75,14 +75,46 @@ export async function fetchAccountEquity(subaccount: string): Promise<number> {
   return Number(res.data.healths[2].health) / 1e18
 }
 
-/** Current signed position size for one product (0 if none/doesn't exist) — used to enforce a max-position cap before adding to it. */
-export async function fetchPosition(subaccount: string, productId: number): Promise<number> {
+export interface AccountExposure {
+  /** Unweighted equity (assets - liabilities) — same figure fetchAccountEquity returns, bundled here to save a call. */
+  equity: number
+  /** productId -> signed position size (base units). */
+  positions: Map<number, number>
+  /** productId -> oracle price — needed to value positions in markets other than the one being traded. */
+  prices: Map<number, number>
+}
+
+/**
+ * One subaccount_info call carrying everything mirror-core's per-market AND
+ * account-wide caps need — equity, every open position, and every product's
+ * oracle price. Used instead of two separate fetches (one for "current
+ * position in this market", one for "total exposure everywhere") since both
+ * caps can be active on the same copy and this runs on every leader fill.
+ */
+export async function fetchAccountExposure(subaccount: string): Promise<AccountExposure> {
   const res = await query<{
-    data: { exists: boolean; perp_balances?: { product_id: number; balance: { amount: string } }[] }
+    data: {
+      exists: boolean
+      healths: { health: string }[]
+      perp_balances?: { product_id: number; balance: { amount: string } }[]
+      perp_products?: { product_id: number; oracle_price_x18: string }[]
+    }
   }>({ type: 'subaccount_info', subaccount })
-  if (!res.data.exists) return 0
-  const bal = res.data.perp_balances?.find((b) => b.product_id === productId)
-  return bal ? Number(bal.balance.amount) / 1e18 : 0
+  if (!res.data.exists) return { equity: 0, positions: new Map(), prices: new Map() }
+  return {
+    equity: Number(res.data.healths[2].health) / 1e18,
+    positions: new Map((res.data.perp_balances ?? []).map((b) => [b.product_id, Number(b.balance.amount) / 1e18])),
+    prices: new Map((res.data.perp_products ?? []).map((p) => [p.product_id, Number(p.oracle_price_x18) / 1e18])),
+  }
+}
+
+/** Sum of |position| * price across every open market — the follower's total notional exposure right now. */
+export function totalNotional(exposure: AccountExposure): number {
+  let sum = 0
+  for (const [productId, amount] of exposure.positions) {
+    sum += Math.abs(amount) * (exposure.prices.get(productId) ?? 0)
+  }
+  return sum
 }
 
 export function roundToTick(price: number, tick: number): number {

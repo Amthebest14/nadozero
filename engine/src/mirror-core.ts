@@ -7,7 +7,7 @@
  */
 import { decodeAppendix, encodeAppendix, fromX18, OrderType, type FillEvent } from './nado-types.ts'
 import { computeFixedMirrorSize, computeMirrorSize } from './sizing.ts'
-import { fetchMarketPrice, fetchPosition, roundPriceX18ToTick, type MarketInfo } from './market-data.ts'
+import { fetchAccountExposure, fetchMarketPrice, roundPriceX18ToTick, totalNotional, type MarketInfo } from './market-data.ts'
 import { placeOrder } from './orders.ts'
 
 /**
@@ -32,8 +32,10 @@ export interface MirrorCtx {
   fixedUsd: number | null
   /** Fraction, e.g. 0.005 = 0.5%. */
   maxSlippagePct: number
-  /** USD notional ceiling on this copy's resulting position — null = no cap. */
+  /** USD notional ceiling on this copy's resulting position in any ONE market — null = no cap. */
   maxPositionUsd: number | null
+  /** Ceiling on TOTAL resulting exposure across every market, as a multiple of current equity — null = no cap. */
+  maxLeverageMultiplier: number | null
   followerSubaccount: string
   followerKey: `0x${string}`
   /** Optional — lets callers tag log lines when multiple followers are running at once. */
@@ -87,17 +89,32 @@ export async function mirrorFill(fill: FillEvent, ctx: MirrorCtx): Promise<Mirro
     return { kind: 'skipped', reason: sized.reason! }
   }
 
-  if (ctx.maxPositionUsd !== null) {
+  if (ctx.maxPositionUsd !== null || ctx.maxLeverageMultiplier !== null) {
     try {
-      const currentPosition = await fetchPosition(ctx.followerSubaccount, fill.product_id)
-      const resultingNotional = Math.abs(currentPosition + sized.qty) * midPrice
-      if (resultingNotional > ctx.maxPositionUsd) {
-        const reason = `resulting position ~$${resultingNotional.toFixed(2)} would exceed your cap of $${ctx.maxPositionUsd}`
+      const exposure = await fetchAccountExposure(ctx.followerSubaccount)
+      const currentPosition = exposure.positions.get(fill.product_id) ?? 0
+      const resultingNotionalThisMarket = Math.abs(currentPosition + sized.qty) * midPrice
+
+      if (ctx.maxPositionUsd !== null && resultingNotionalThisMarket > ctx.maxPositionUsd) {
+        const reason = `resulting position ~$${resultingNotionalThisMarket.toFixed(2)} would exceed your per-market cap of $${ctx.maxPositionUsd}`
         console.log(`${tag}  -> skipped: ${reason}`)
         return { kind: 'skipped', reason }
       }
+
+      if (ctx.maxLeverageMultiplier !== null) {
+        // Every OTHER market's current notional, plus what this market's position would become after this trade.
+        const priceInMarket = exposure.prices.get(fill.product_id) ?? midPrice
+        const otherMarketsNotional = totalNotional(exposure) - Math.abs(currentPosition) * priceInMarket
+        const resultingTotal = otherMarketsNotional + resultingNotionalThisMarket
+        const cap = exposure.equity * ctx.maxLeverageMultiplier
+        if (resultingTotal > cap) {
+          const reason = `resulting total exposure ~$${resultingTotal.toFixed(2)} would exceed ${ctx.maxLeverageMultiplier}x your $${exposure.equity.toFixed(2)} balance ($${cap.toFixed(2)} cap)`
+          console.log(`${tag}  -> skipped: ${reason}`)
+          return { kind: 'skipped', reason }
+        }
+      }
     } catch (e) {
-      const error = `couldn't verify position cap: ${e instanceof Error ? e.message : String(e)}`
+      const error = `couldn't verify exposure caps: ${e instanceof Error ? e.message : String(e)}`
       console.log(`${tag}  -> skipped: ${error}`)
       return { kind: 'skipped', reason: error }
     }

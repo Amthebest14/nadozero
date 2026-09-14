@@ -85,10 +85,22 @@ async function main() {
     ? Number(process.env.FOLLOWER_MAX_SLIPPAGE_PCT)
     : DEFAULT_MAX_SLIPPAGE_PCT
   const maxPositionUsd = process.env.FOLLOWER_MAX_POSITION_USD ? Number(process.env.FOLLOWER_MAX_POSITION_USD) : null
+  const maxLeverageMultiplier = process.env.FOLLOWER_MAX_LEVERAGE ? Number(process.env.FOLLOWER_MAX_LEVERAGE) : null
   console.log(`Max slippage:         ${(maxSlippagePct * 100).toFixed(2)}%`)
   console.log(`Max position cap:     ${maxPositionUsd === null ? 'none (be careful)' : `$${maxPositionUsd}`}`)
+  console.log(`Max leverage cap:     ${maxLeverageMultiplier === null ? 'none (be careful)' : `${maxLeverageMultiplier}x equity`}`)
 
-  const ctx: MirrorCtx = { markets, mode, ratio, fixedUsd, maxSlippagePct, maxPositionUsd, followerSubaccount, followerKey }
+  const ctx: MirrorCtx = {
+    markets,
+    mode,
+    ratio,
+    fixedUsd,
+    maxSlippagePct,
+    maxPositionUsd,
+    maxLeverageMultiplier,
+    followerSubaccount,
+    followerKey,
+  }
   const ws = new WebSocket(SUBSCRIPTIONS_WS)
 
   ws.addEventListener('open', () => {

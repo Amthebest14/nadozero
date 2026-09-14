@@ -31,6 +31,8 @@ export interface CopyRecord {
   maxSlippagePct: number
   /** USD notional ceiling on this copy's position in any one market — a mirrored order that would push past it is skipped, not resized. null = no cap (only possible on rows from before this field existed). */
   maxPositionUsd: number | null
+  /** Ceiling on TOTAL resulting exposure across every market, as a multiple of current equity — null = no cap (rows from before this field existed). */
+  maxLeverageMultiplier: number | null
   status: CopyStatus
   /** Set when auto-paused by an insufficient-health order rejection (2006/2036) — null otherwise. */
   lastError: string | null
@@ -86,6 +88,7 @@ export function openDb(path: string): Database.Database {
       leader_equity_at_signup REAL,
       max_slippage_pct REAL NOT NULL DEFAULT 0.005,
       max_position_usd REAL,
+      max_leverage_multiplier REAL,
       last_error TEXT,
       last_error_at INTEGER,
       telegram_chat_id TEXT,
@@ -100,6 +103,7 @@ export function openDb(path: string): Database.Database {
   for (const stmt of [
     `ALTER TABLE copies ADD COLUMN max_slippage_pct REAL NOT NULL DEFAULT 0.005`,
     `ALTER TABLE copies ADD COLUMN max_position_usd REAL`,
+    `ALTER TABLE copies ADD COLUMN max_leverage_multiplier REAL`,
     `ALTER TABLE copies ADD COLUMN last_error TEXT`,
     `ALTER TABLE copies ADD COLUMN last_error_at INTEGER`,
     `ALTER TABLE copies ADD COLUMN telegram_chat_id TEXT`,
@@ -127,6 +131,8 @@ interface NewCopyInput {
   maxSlippagePct?: number
   /** USD notional ceiling on this copy's position — no default; the caller (CopyModal) always sets one deliberately. */
   maxPositionUsd: number
+  /** Cap on total exposure across every market, as a multiple of equity (e.g. 5 = 5x) — no default, CopyModal always sets one. */
+  maxLeverageMultiplier: number
   telegramChatId?: string
 }
 
@@ -137,8 +143,8 @@ export function insertCopy(db: Database.Database, input: NewCopyInput): string {
     `INSERT INTO copies
       (id, leader_address, leader_subaccount, follower_wallet_address, follower_subaccount,
        encrypted_signer_key, mode, allocation_usd, fixed_usd, leader_equity_at_signup,
-       max_slippage_pct, max_position_usd, telegram_chat_id, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)`,
+       max_slippage_pct, max_position_usd, max_leverage_multiplier, telegram_chat_id, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)`,
   ).run(
     id,
     input.leaderAddress,
@@ -152,6 +158,7 @@ export function insertCopy(db: Database.Database, input: NewCopyInput): string {
     input.leaderEquityAtSignup ?? null,
     input.maxSlippagePct ?? DEFAULT_MAX_SLIPPAGE_PCT,
     input.maxPositionUsd,
+    input.maxLeverageMultiplier,
     input.telegramChatId ?? null,
     Date.now(),
   )
@@ -171,6 +178,7 @@ interface Row {
   leader_equity_at_signup: number | null
   max_slippage_pct: number
   max_position_usd: number | null
+  max_leverage_multiplier: number | null
   last_error: string | null
   last_error_at: number | null
   telegram_chat_id: string | null
@@ -191,6 +199,7 @@ function toRecord(r: Row): CopyRecord {
     leaderEquityAtSignup: r.leader_equity_at_signup,
     maxSlippagePct: r.max_slippage_pct,
     maxPositionUsd: r.max_position_usd,
+    maxLeverageMultiplier: r.max_leverage_multiplier,
     status: r.status,
     lastError: r.last_error,
     lastErrorAt: r.last_error_at,

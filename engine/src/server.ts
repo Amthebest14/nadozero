@@ -79,6 +79,7 @@ async function main() {
           fixedUsd: f.mode === 'fixed' ? f.fixedUsd : null,
           maxSlippagePct: f.maxSlippagePct,
           maxPositionUsd: f.maxPositionUsd,
+          maxLeverageMultiplier: f.maxLeverageMultiplier,
           followerSubaccount: f.followerSubaccount,
           followerKey: f.followerPrivateKey,
           label: f.id.slice(0, 8),
@@ -142,6 +143,7 @@ async function main() {
       fixedUsd,
       maxSlippagePct,
       maxPositionUsd,
+      maxLeverageMultiplier,
       telegramChatId,
     } = req.body ?? {}
 
@@ -154,6 +156,9 @@ async function main() {
     }
     if (typeof maxPositionUsd !== 'number' || maxPositionUsd <= 0) {
       return res.status(400).json({ error: 'maxPositionUsd must be a positive number' })
+    }
+    if (typeof maxLeverageMultiplier !== 'number' || maxLeverageMultiplier <= 0 || maxLeverageMultiplier > 5) {
+      return res.status(400).json({ error: 'maxLeverageMultiplier must be a number between 0 and 5' })
     }
 
     // Normalize case ONCE, here, before anything is stored or compared —
@@ -203,6 +208,7 @@ async function main() {
       leaderEquityAtSignup: leaderEquityAtSignup ?? undefined,
       maxSlippagePct: maxSlippagePct ?? DEFAULT_MAX_SLIPPAGE_PCT,
       maxPositionUsd,
+      maxLeverageMultiplier,
       telegramChatId: typeof telegramChatId === 'string' && telegramChatId.trim() ? telegramChatId.trim() : undefined,
     })
 

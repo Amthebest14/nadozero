@@ -61,9 +61,10 @@ const fromRaw = (raw: bigint) => Number(raw) / 10 ** USDT0_DECIMALS
 export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () => void }) {
   const [mode, setMode] = useState<CopyMode>('fixed')
   const [amount, setAmount] = useState('100')
-  const [fixedUsd, setFixedUsd] = useState('1')
+  const [fixedUsd, setFixedUsd] = useState('15')
   const [maxSlippagePctInput, setMaxSlippagePctInput] = useState('0.5') // percent, as typed — 0.5 means 0.5%
   const [maxPositionUsdInput, setMaxPositionUsdInput] = useState('50')
+  const [leverageMultiplier, setLeverageMultiplier] = useState(2)
   const leaderSubaccount = primarySubaccount(leader) ?? defaultSubaccountOf(leader.address)
   const { data: leaderFreq } = useLeaderFrequency(leaderSubaccount)
   const [risksAcknowledged, setRisksAcknowledged] = useState(false)
@@ -135,6 +136,7 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
         fixedUsd: mode === 'fixed' ? Number(fixedUsd) : undefined,
         maxSlippagePct: Number(maxSlippagePctInput) / 100,
         maxPositionUsd: Number(maxPositionUsdInput),
+        maxLeverageMultiplier: leverageMultiplier,
       })
     } catch (e) {
       setError(walletErrorMessage(e))
@@ -368,6 +370,39 @@ export function CopyModal({ leader, onClose }: { leader: LeaderRow; onClose: () 
                 position is a hard ceiling on this copy's notional in any one market — a trade that would push
                 past it is skipped, not resized.
               </p>
+
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-500">
+                  Max total exposure
+                </label>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {[1, 2, 3, 4, 5].map((x) => (
+                    <button
+                      key={x}
+                      onClick={() => setLeverageMultiplier(x)}
+                      className={`rounded-lg border py-2 text-sm font-medium transition-colors ${
+                        leverageMultiplier === x
+                          ? 'border-mint-500/50 bg-mint-500/[0.1] text-mint-400'
+                          : 'border-ink-600 text-slate-400 hover:border-slate-500'
+                      }`}
+                    >
+                      {x}×
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-xs text-slate-600">
+                  A hard ceiling on your <strong>total</strong> open exposure across everything at once, as a
+                  multiple of your account balance — separate from the per-market cap above. Any mirrored trade
+                  that would push your combined positions past this is skipped, not resized.
+                </p>
+                {leverageMultiplier >= 4 && (
+                  <div className="mt-2 rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2.5 text-xs leading-relaxed text-amber-300">
+                    <strong>{leverageMultiplier}× is aggressive</strong> — at this level, roughly a{' '}
+                    {(100 / leverageMultiplier).toFixed(0)}% adverse move against your combined positions can
+                    wipe out your entire balance. Lower it if you're not deliberately trying to run this hot.
+                  </div>
+                )}
+              </div>
 
               <p className="text-xs text-slate-600">
                 Deposit is only requested if your subaccount needs it — if it's already funded, nothing is
