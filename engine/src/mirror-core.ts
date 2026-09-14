@@ -10,6 +10,17 @@ import { computeFixedMirrorSize, computeMirrorSize } from './sizing.ts'
 import { fetchMarketPrice, fetchPosition, roundPriceX18ToTick, type MarketInfo } from './market-data.ts'
 import { placeOrder } from './orders.ts'
 
+/**
+ * NadoZero's own Nado builder registration — approved 2026-09-13 (Builder ID
+ * 5200, confirmed live by Nado's team). Before this existed every mirrored
+ * order went out with builderId 0 (encodeAppendix's default when omitted),
+ * meaning zero builder fees were ever captured, on any real trade, until
+ * this constant was added. builderFeeRate is in 0.1bps units — 10 units =
+ * 1bps — matching the 4bps rate submitted in the Builder Program application.
+ */
+const NADOZERO_BUILDER_ID = 5200
+const NADOZERO_BUILDER_FEE_RATE = 40 // 4bps
+
 export type Mode = 'proportional' | 'fixed'
 
 export interface MirrorCtx {
@@ -107,7 +118,11 @@ export async function mirrorFill(fill: FillEvent, ctx: MirrorCtx): Promise<Mirro
       sender: ctx.followerSubaccount,
       priceX18,
       amount: BigInt(Math.round(sized.qty * 1e18)),
-      appendix: encodeAppendix({ orderType: OrderType.IOC }),
+      appendix: encodeAppendix({
+        orderType: OrderType.IOC,
+        builderId: NADOZERO_BUILDER_ID,
+        builderFeeRate: NADOZERO_BUILDER_FEE_RATE,
+      }),
       followerPrivateKey: ctx.followerKey,
     })
 
