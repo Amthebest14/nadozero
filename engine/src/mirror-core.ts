@@ -50,6 +50,18 @@ export interface MirrorCtx {
  */
 export const INSUFFICIENT_HEALTH_CODES = new Set([2006, 2036])
 
+/**
+ * Nado's code for "this order's signature doesn't match the subaccount's
+ * CURRENTLY linked signer" — confirmed live (2026-09-14): a follower who
+ * reruns the copy-setup flow more than once links a fresh signer each time,
+ * and Nado allows only one linked signer per subaccount, so every retry
+ * silently orphans whichever copy was relying on the previous one. Distinct
+ * from an insufficient-health pause: topping up funds does nothing here —
+ * the copy's stored key is simply no longer authorized on-chain, and needs
+ * a fresh copy setup, not a deposit.
+ */
+export const SIGNER_MISMATCH_CODES = new Set([2028])
+
 export type MirrorOutcome =
   | { kind: 'skipped'; reason: string }
   | { kind: 'placed'; digest?: string }

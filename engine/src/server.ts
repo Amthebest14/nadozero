@@ -24,9 +24,10 @@ import {
   setCopyStatus,
   setTelegramChatId,
   type CopyMode,
+  type CopyRecordWithKey,
 } from './db.ts'
 import { defaultSubaccountOf, SUBSCRIPTIONS_WS, type FillEvent } from './nado-types.ts'
-import { INSUFFICIENT_HEALTH_CODES, mirrorFill, type MirrorCtx } from './mirror-core.ts'
+import { INSUFFICIENT_HEALTH_CODES, SIGNER_MISMATCH_CODES, mirrorFill, type MirrorCtx } from './mirror-core.ts'
 import { computeRatio } from './sizing.ts'
 import { fetchAccountEquity, fetchMarkets, type MarketInfo } from './market-data.ts'
 import { registerTelegramWebhook, sendTelegramAlert } from './telegram.ts'
@@ -50,6 +51,19 @@ async function main() {
 
   /** One WebSocket per leader being watched, fanned out to every active follower on each fill. */
   const watchers = new Map<string, WebSocket>()
+
+  /** Shared by both auto-pause triggers below — same DB/watcher/alert plumbing, different reason text per failure class. */
+  function autoPauseCopy(f: CopyRecordWithKey, leaderSubaccount: string, logReason: string, reason: string, advice: string) {
+    console.log(`[${f.id.slice(0, 8)}] auto-pausing: ${logReason}`)
+    setCopyError(db, f.id, reason)
+    stopWatchingIfIdle(leaderSubaccount)
+    if (f.telegramChatId) {
+      void sendTelegramAlert(
+        f.telegramChatId,
+        `⏸ NadoZero paused your copy of ${f.leaderAddress.slice(0, 8)}…\n\n${reason}\n\n${advice}`,
+      )
+    }
+  }
 
   function watchLeader(leaderSubaccount: string) {
     if (watchers.has(leaderSubaccount)) return
@@ -85,17 +99,23 @@ async function main() {
           label: f.id.slice(0, 8),
         }
         mirrorFill(msg as FillEvent, ctx).then((outcome) => {
-          if (outcome.kind === 'failed' && outcome.errorCode && INSUFFICIENT_HEALTH_CODES.has(outcome.errorCode)) {
-            const reason = `Paused: insufficient account health (${outcome.error ?? `code ${outcome.errorCode}`})`
-            console.log(`[${f.id.slice(0, 8)}] auto-pausing: insufficient account health (code ${outcome.errorCode})`)
-            setCopyError(db, f.id, reason)
-            stopWatchingIfIdle(leaderSubaccount)
-            if (f.telegramChatId) {
-              void sendTelegramAlert(
-                f.telegramChatId,
-                `⏸ NadoZero paused your copy of ${f.leaderAddress.slice(0, 8)}…\n\n${reason}\n\nResume it from My Copies once you've topped up.`,
-              )
-            }
+          if (outcome.kind !== 'failed' || !outcome.errorCode) return
+          if (INSUFFICIENT_HEALTH_CODES.has(outcome.errorCode)) {
+            autoPauseCopy(
+              f,
+              leaderSubaccount,
+              `insufficient account health (code ${outcome.errorCode})`,
+              `Paused: insufficient account health (${outcome.error ?? `code ${outcome.errorCode}`})`,
+              `Resume it from My Copies once you've topped up.`,
+            )
+          } else if (SIGNER_MISMATCH_CODES.has(outcome.errorCode)) {
+            autoPauseCopy(
+              f,
+              leaderSubaccount,
+              `linked signer no longer valid (code ${outcome.errorCode})`,
+              `Paused: your linked signer is no longer valid — it looks like it was replaced by a newer copy setup on this wallet.`,
+              `Stop this copy and set up a fresh one from the leaderboard to fix it — topping up won't help here.`,
+            )
           }
         })
       }
